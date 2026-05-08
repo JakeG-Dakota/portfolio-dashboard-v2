@@ -1,0 +1,7 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a1a2e; }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 7px 10px; text-align: left; border: 1px solid #d0d8e4; font-size: 12px; }
+th { background: #204e7a; color: #fff; font-weight: 600; white-space: nowrap; font-size: 11px; }
+tr:nth-child(even) td { background: #f5f9fd; }
+tr:hover td { background: #daeaf7 !important; }
