@@ -1082,7 +1082,8 @@ export default function App() {
   const loadBuilding = useCallback(async (key) => {
     const cfg = BUILDINGS[key];
     try {
-      const XLSX = (await import('xlsx')).default;
+      const xlsxMod = await import('xlsx');
+      const XLSX = xlsxMod.default || xlsxMod;
       const res = await fetch(cfg.file+'?t='+Date.now());
       if (!res.ok) throw new Error(
         `Could not load ${cfg.file} (${res.status}). ` +
