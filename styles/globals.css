@@ -1,7 +1,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a1a2e; }
+body { font-family: Georgia, serif; background: #F5F0EA; color: #2C2925; }
 table { border-collapse: collapse; width: 100%; }
-th, td { padding: 7px 10px; text-align: left; border: 1px solid #d0d8e4; font-size: 12px; }
-th { background: #204e7a; color: #fff; font-weight: 600; white-space: nowrap; font-size: 11px; }
-tr:nth-child(even) td { background: #f5f9fd; }
-tr:hover td { background: #daeaf7 !important; }
+th, td { padding: 7px 10px; text-align: left; font-size: 12px; border-bottom: 1px solid #B5A494; border-top: none; border-left: none; border-right: none; }
+th { background: #2C2925; color: #F5F0EA; font-weight: 600; white-space: nowrap; font-size: 11px; }
+tr:nth-child(even) td { background: #EDE7DE; }
+tr:nth-child(odd) td { background: #F5F0EA; }
+tr:hover td { background: #B5A494 !important; color: #2C2925; }
