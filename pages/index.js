@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-
-// ── Colours ──────────────────────────────────────────────────────
+// ── Colours ───────────────────────────────────────────────────────
 const C = {
   navy:'#1a3a5c', darkBlue:'#204e7a', midBlue:'#2e75b6',
   lightBlue:'#daeaf7', vlBlue:'#eef5fb', white:'#ffffff',
@@ -31,11 +29,11 @@ const BUILDINGS = {
     suburb: 'Sydney CBD',
     shortName: 'Castlereagh',
     accent: C.darkBlue,
-    expiryCol: 'Z',   // col 26 — hardcoded source
-    psmCol:    'AA',  // col 27
-    nameCol:   'AB',  // col 28
-    reviewTypeCol: 'P', // col 16
-    nextReviewCol: 'Q', // col 17
+    expiryCol: 'Z',
+    psmCol:    'AA',
+    nameCol:   'AB',
+    reviewTypeCol: 'P',
+    nextReviewCol: 'Q',
     dataStart: 3,
     dataEnd:   27,
     floorOrder: ['L12','L11','L10','L09','L08','L07','L06','L05','L04','L03','L02','L01','GF','LWR GND'],
@@ -49,11 +47,11 @@ const BUILDINGS = {
     suburb: 'North Sydney',
     shortName: 'Elizabeth',
     accent: '#1F6B75',
-    expiryCol: 'AD',  // col 30
-    psmCol:    'AE',  // col 31
-    nameCol:   'AF',  // col 32
-    reviewTypeCol: 'S', // col 19
-    nextReviewCol: 'T', // col 20
+    expiryCol: 'AD',
+    psmCol:    'AE',
+    nameCol:   'AF',
+    reviewTypeCol: 'S',
+    nextReviewCol: 'T',
     dataStart: 3,
     dataEnd:   23,
     floorOrder: ['L12','L11','L10','L09','L08','L07','L06','L05','L04','L03'],
@@ -120,8 +118,6 @@ function parseBuilding(wb, cfg) {
     const remYrs  = active ? (expiry - today) / (365.25 * 86400000) : 0;
     const grossPA = active ? psm * nla : 0;
 
-    // Optionally read market PSM (col X = col 24 for Elizabeth, col S = col 19 for Castlereagh)
-    // But primarily from Market Rents tab
     const mktRaw = parseFloat(cv(id, `X${r}`)) || 0;
 
     suites.push({
@@ -130,7 +126,6 @@ function parseBuilding(wb, cfg) {
     });
   }
 
-  // Aggregates
   const active   = suites.filter(s => s.active);
   const totalNLA = suites.reduce((s,x) => s+x.nla, 0);
   const occNLA   = active.reduce((s,x) => s+x.nla, 0);
@@ -144,14 +139,12 @@ function parseBuilding(wb, cfg) {
   const waleNLA  = wNLA_d > 0 ? wNLA_n/wNLA_d : 0;
   const waleInc  = wInc_d > 0 ? wInc_n/wInc_d : 0;
 
-  // Expiry buckets
   const buckets = {'2026':[],'2027':[],'2028':[],'2029':[],'2030':[],'2031+':[],'Vacant':[]};
   for (const s of suites) {
     if (!s.active) { buckets['Vacant'].push(s); continue; }
     buckets[bucketKey(s.expiry)].push(s);
   }
 
-  // Market rents
   const mktRents = {};
   const mr = wb.Sheets['Market Rents 26-27'];
   if (mr) {
@@ -164,7 +157,6 @@ function parseBuilding(wb, cfg) {
     if (mktRents[s.suiteNum]) s.mktPSM = mktRents[s.suiteNum];
   }
 
-  // By floor
   const floorMap = {};
   for (const s of suites) {
     if (!s.floor) continue;
@@ -179,18 +171,15 @@ function parseBuilding(wb, cfg) {
   }
   const byFloor = cfg.floorOrder.map(f => floorMap[f]).filter(Boolean);
 
-  // Critical dates — compute from raw data (reliable, no formula cache needed)
   const criticalDates = [];
   const d18mo = new Date(today); d18mo.setMonth(d18mo.getMonth()+18);
   for (const s of suites) {
     if (!s.active) continue;
-    // Lease expiry within 18 months
     if (s.expiry && s.expiry <= d18mo) {
       const days = Math.round((s.expiry - today)/86400000);
       criticalDates.push({ suite:s.suiteNum, tenant:s.dispName, event:'Lease Expiry',
         date:s.expiry, days, note:`${s.nla.toFixed(0)} sqm · ${fmtPSM(s.psm)} psm` });
     }
-    // Rent review within 12 months
     const rv = id[`${cfg.nextReviewCol}${s.r}`];
     if (rv) {
       let rvDate = null;
@@ -207,7 +196,6 @@ function parseBuilding(wb, cfg) {
   }
   criticalDates.sort((a,b) => a.date - b.date);
 
-  // Valuation
   let valuation = null;
   const vt = wb.Sheets['Valuations'];
   if (vt) {
@@ -276,7 +264,6 @@ function TopNav({ view, setView, loaded }) {
     { id:'ep_stack',    label:'Stack Plan', group:'1 Elizabeth Plaza' },
   ];
 
-  // Group headers
   const groups = [
     { label:'', tabs:['portfolio'] },
     { label:'17 Castlereagh St, Sydney CBD', tabs:['cs_dashboard','cs_stack'], color:C.darkBlue },
@@ -285,6 +272,15 @@ function TopNav({ view, setView, loaded }) {
 
   return (
     <div style={{ background:C.navy }}>
+      {/* GFO Header */}
+      <div style={{ maxWidth:1400, margin:'0 auto', padding:'10px 24px 6px', display:'flex',
+        justifyContent:'space-between', alignItems:'baseline',
+        borderBottom:'1px solid rgba(255,255,255,0.1)' }}>
+        <span style={{ color:'rgba(255,255,255,0.9)', fontSize:13, fontWeight:700,
+          letterSpacing:1, fontFamily:'Georgia, serif' }}>Goldberg Family Office</span>
+        <span style={{ color:'rgba(255,255,255,0.45)', fontSize:11,
+          fontFamily:'Georgia, serif' }}>Prepared by Jake Goldberg</span>
+      </div>
       {/* Building group labels */}
       <div style={{ maxWidth:1400, margin:'0 auto', display:'flex',
         borderBottom:`1px solid rgba(255,255,255,0.1)`, padding:'0 24px' }}>
@@ -346,7 +342,7 @@ function TopNav({ view, setView, loaded }) {
   );
 }
 
-// ── Portfolio overview ────────────────────────────────────────────
+// ── Portfolio overview ───────────────────────────────────────────
 function PortfolioView({ buildings }) {
   const cs = buildings.castlereagh;
   const ep = buildings.elizabeth;
@@ -483,7 +479,7 @@ function PortfolioView({ buildings }) {
   );
 }
 
-// ── Building Dashboard ────────────────────────────────────────────
+// ── Building Dashboard ───────────────────────────────────────────
 function BuildingDashboard({ data, cfg }) {
   const [tab, setTab] = useState('overview');
   const subTabs = [
@@ -636,7 +632,7 @@ function OverviewSection({ data, totalInc, accent }) {
   );
 }
 
-// ── Leases ────────────────────────────────────────────────────────
+// ── Leases ───────────────────────────────────────────────────────
 function LeasesSection({ data }) {
   const [sortCol, setSortCol] = useState('expiry');
   const [sortDir, setSortDir] = useState(1);
@@ -686,7 +682,7 @@ function LeasesSection({ data }) {
   );
 }
 
-// ── Expiry Profile ────────────────────────────────────────────────
+// ── Expiry Profile ───────────────────────────────────────────────
 function ExpirySection({ data, totalInc }) {
   return (
     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16}}>
@@ -723,7 +719,7 @@ function ExpirySection({ data, totalInc }) {
   );
 }
 
-// ── Market Rents ──────────────────────────────────────────────────
+// ── Market Rents ─────────────────────────────────────────────────
 function MarketSection({ data }) {
   const suites = data.active.filter(s=>s.psm>0);
   return (
@@ -781,7 +777,7 @@ function FloorsSection({ data, totalInc }) {
   );
 }
 
-// ── Critical Dates ────────────────────────────────────────────────
+// ── Critical Dates ───────────────────────────────────────────────
 function CriticalSection({ data }) {
   return (
     <Card title="Critical Dates — Next 18 Months (Lease Expiries & Rent Reviews)">
@@ -1052,7 +1048,7 @@ function Card({ title, children, accent=C.navy }) {
   );
 }
 
-// ── Loading / Error ───────────────────────────────────────────────
+// ── Loading / Error ──────────────────────────────────────────────
 function Spinner() {
   return (
     <div style={{display:'flex',flexDirection:'column',alignItems:'center',
@@ -1066,7 +1062,7 @@ function Spinner() {
   );
 }
 
-// ── Main App ─────────────────────────────────────────────────────
+// ── Main App ──────────────────────────────────────────────────────
 export default function App() {
   const [auth,    setAuth]    = useState(false);
   const [view,    setView]    = useState('portfolio');
