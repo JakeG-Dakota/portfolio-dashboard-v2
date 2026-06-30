@@ -58,6 +58,7 @@ const BUILDINGS = {
     nameCol:   'AB',
     reviewTypeCol: 'P',
     nextReviewCol: 'Q',
+    netCol: 'L',
     dataStart: 3,
     dataEnd:   27,
     floorOrder: ['L12','L11','L10','L09','L08','L07','L06','L05','L04','L03','L02','L01','GF','LWR GND'],
@@ -76,6 +77,7 @@ const BUILDINGS = {
     nameCol:   'AF',
     reviewTypeCol: 'S',
     nextReviewCol: 'T',
+    netCol: 'Q',
     dataStart: 3,
     dataEnd:   24,
     floorOrder: ['L12','L11','L10','L09','L08','L07','L06','L05','L04','L03'],
@@ -142,10 +144,11 @@ function parseBuilding(wb, cfg) {
     const remYrs  = active ? (expiry - today) / (365.25 * 86400000) : 0;
     const grossPA = active ? psm * nla : 0;
     const mktRaw  = parseFloat(cv(id, `X${r}`)) || 0;
+    const netPA   = active ? (parseFloat(cv(id, `${cfg.netCol}${r}`)) || grossPA) : 0;
 
     suites.push({
       r, floor, suiteNum: String(suiteNum || ''), nla, expiry, psm, dispName,
-      active, expired, vacant, remYrs, grossPA, mktPSM: mktRaw,
+      active, expired, vacant, remYrs, grossPA, netPA, mktPSM: mktRaw,
     });
   }
 
@@ -155,6 +158,7 @@ function parseBuilding(wb, cfg) {
   const vacNLA   = totalNLA - occNLA;
   const occ      = totalNLA > 0 ? occNLA/totalNLA : 0;
   const grossInc = active.reduce((s,x) => s+x.grossPA, 0);
+  const netInc   = active.reduce((s,x) => s+x.netPA, 0);
   const wNLA_n   = active.reduce((s,x) => s+x.nla*x.remYrs, 0);
   const wNLA_d   = active.reduce((s,x) => s+x.nla, 0);
   const wInc_n   = active.reduce((s,x) => s+x.grossPA*x.remYrs, 0);
@@ -234,7 +238,7 @@ function parseBuilding(wb, cfg) {
     };
   }
 
-  return { suites, active, totalNLA, occNLA, vacNLA, occ, grossInc,
+  return { suites, active, totalNLA, occNLA, vacNLA, occ, grossInc, netInc,
            waleNLA, waleInc, buckets, byFloor, criticalDates, valuation, cfg };
 }
 
@@ -363,6 +367,7 @@ function PortfolioView({ buildings }) {
   const ep = buildings.elizabeth;
   const portfolioNLA    = (cs?.totalNLA||0) + (ep?.totalNLA||0);
   const portfolioInc    = (cs?.grossInc||0) + (ep?.grossInc||0);
+  const portfolioNetInc = (cs?.netInc||0) + (ep?.netInc||0);
   const portfolioOccNLA = (cs?.occNLA||0) + (ep?.occNLA||0);
   const portfolioOcc    = portfolioNLA>0 ? portfolioOccNLA/portfolioNLA : 0;
   const waleNLA_n = ((cs?.waleNLA||0)*(cs?.occNLA||0)) + ((ep?.waleNLA||0)*(ep?.occNLA||0));
@@ -373,11 +378,12 @@ function PortfolioView({ buildings }) {
     <div>
       {/* Portfolio KPIs */}
       <div style={{ background:C.stone, margin:'-24px -24px 24px', padding:'16px 24px' }}>
-        <div style={{ maxWidth:1400-48, display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12 }}>
+        <div style={{ maxWidth:1400-48, display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12 }}>
           {[
             ['PORTFOLIO NLA', `${fmtNum(portfolioNLA,0)} sqm`, C.sand],
             ['PORTFOLIO OCCUPANCY', fmtPct(portfolioOcc), portfolioOcc>=0.90?C.lightGreen:C.ltOrange],
             ['PORTFOLIO GROSS INCOME PA', fmtCcy(portfolioInc), C.sand],
+            ['PORTFOLIO NET INCOME PA', fmtCcy(portfolioNetInc), C.sand],
             ['PORTFOLIO WALE (NLA)', `${portfolioWALE.toFixed(2)} yrs`, C.sand],
           ].map(([l,v,a]) => (
             <div key={l} style={{ background:'rgba(255,255,255,0.07)', borderRadius:8,
@@ -408,6 +414,7 @@ function PortfolioView({ buildings }) {
                     ['Total NLA', `${fmtNum(data.totalNLA,0)} sqm`],
                     ['Occupancy', fmtPct(data.occ)],
                     ['Gross Income PA', fmtCcy(data.grossInc)],
+                    ['Net Income PA', fmtCcy(data.netInc)],
                     ['WALE (NLA)', `${data.waleNLA.toFixed(2)} yrs`],
                     ['WALE (Income)', `${data.waleInc.toFixed(2)} yrs`],
                     ['Vacant NLA', `${fmtNum(data.vacNLA,0)} sqm`],
@@ -512,12 +519,13 @@ function BuildingDashboard({ data, cfg }) {
   return (
     <div>
       <div style={{ background:accent, margin:'-24px -24px 0', padding:'12px 24px' }}>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:10, maxWidth:1352 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:10, maxWidth:1352 }}>
           {[
             ['TOTAL NLA', `${fmtNum(data.totalNLA,0)} sqm`],
             ['OCCUPANCY', fmtPct(data.occ)],
             ['VACANT NLA', `${fmtNum(data.vacNLA,0)} sqm`],
             ['GROSS INCOME PA', fmtCcy(data.grossInc)],
+            ['NET INCOME PA', fmtCcy(data.netInc)],
             ['WALE (NLA)', `${data.waleNLA.toFixed(2)} yrs`],
             ['WALE (Income)', `${data.waleInc.toFixed(2)} yrs`],
           ].map(([l,v]) => (
@@ -668,6 +676,7 @@ function LeasesSection({ data }) {
             <Th col="floor" label="Floor"/><Th col="suiteNum" label="Suite"/>
             <Th col="dispName" label="Tenant"/><Th col="nla" label="NLA"/>
             <Th col="psm" label="Face PSM"/><Th col="grossPA" label="Gross PA"/>
+            <Th col="netPA" label="Net PA"/>
             <Th col="expiry" label="Expiry"/><Th col="remYrs" label="Remaining"/>
           </tr></thead>
           <tbody>
@@ -680,6 +689,7 @@ function LeasesSection({ data }) {
                 <td style={{textAlign:'right'}}>{fmtNum(s.nla,0)}</td>
                 <td style={{textAlign:'right'}}>{s.active?fmtPSM(s.psm):'—'}</td>
                 <td style={{textAlign:'right',fontWeight:600}}>{s.active?fmtCcy(s.grossPA):'—'}</td>
+                <td style={{textAlign:'right',fontWeight:600}}>{s.active?fmtCcy(s.netPA):'—'}</td>
                 <td style={{color:s.expired?C.red:s.active&&s.remYrs<1?C.orange:'inherit'}}>
                   {s.expiry?fmtDate(s.expiry):s.vacant?'VACANT':'—'}
                 </td>
@@ -884,6 +894,7 @@ function StackPlan({ data, cfg }) {
             ['Total NLA',`${fmtNum(data.totalNLA,0)} sqm`],
             ['Occupancy',fmtPct(data.occ)],
             ['Gross Income',fmtCcy(data.grossInc)+' pa'],
+            ['Net Income',fmtCcy(data.netInc)+' pa'],
             ['WALE (NLA)',`${data.waleNLA.toFixed(2)} yrs`],
             ['Active Leases',`${data.active.length} suites`],
             ['Vacant NLA',`${fmtNum(data.vacNLA,0)} sqm`],
