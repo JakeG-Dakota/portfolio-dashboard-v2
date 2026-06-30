@@ -58,7 +58,7 @@ const BUILDINGS = {
     nameCol:   'AB',
     reviewTypeCol: 'P',
     nextReviewCol: 'Q',
-    netCol: 'L',
+    netCol: 'N',
     dataStart: 3,
     dataEnd:   27,
     floorOrder: ['L12','L11','L10','L09','L08','L07','L06','L05','L04','L03','L02','L01','GF','LWR GND'],
