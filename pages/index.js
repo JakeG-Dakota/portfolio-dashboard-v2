@@ -77,7 +77,7 @@ const BUILDINGS = {
     reviewTypeCol: 'S',
     nextReviewCol: 'T',
     dataStart: 3,
-    dataEnd:   23,
+    dataEnd:   24,
     floorOrder: ['L12','L11','L10','L09','L08','L07','L06','L05','L04','L03'],
     critDatesStart: 48,
     critDatesEnd: 59,
@@ -136,7 +136,7 @@ function parseBuilding(wb, cfg) {
         expiry = new Date(Math.round((expCell.v - 25569) * 86400000));
     }
 
-    const active  = expiry && expiry > today && psm > 0;
+    const active  = expiry && expiry > today && (psm > 0 || cv(id, `${cfg.nameCol}${r}`) != null);
     const expired = expiry && expiry <= today;
     const vacant  = !expiry || psm === 0;
     const remYrs  = active ? (expiry - today) / (365.25 * 86400000) : 0;
