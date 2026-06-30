@@ -1,24 +1,47 @@
 import { useState, useEffect, useCallback } from 'react';
+
 // ── Colours ───────────────────────────────────────────────────────
 const C = {
-  navy:'#1a3a5c', darkBlue:'#204e7a', midBlue:'#2e75b6',
-  lightBlue:'#daeaf7', vlBlue:'#eef5fb', white:'#ffffff',
-  grey:'#595959', ltGrey:'#f2f2f2', brdr:'#d0d8e4',
-  green:'#1e5631', lightGreen:'#e2efda',
-  red:'#7b0000', lightRed:'#ffe5e5',
-  orange:'#c55a11', ltOrange:'#fce4d6',
-  purple:'#5c2d91', ltPurple:'#ede7f6',
-  teal:'#006064', ltTeal:'#e0f7fa',
-  gold:'#b8860b', ltGold:'#fff8dc',
+  // House palette
+  stone:    '#2C2925',
+  warm:     '#6B5E52',
+  sand:     '#B5A494',
+  parchment:'#F5F0EA',
+  linen:    '#EDE7DE',
+  white:    '#ffffff',
+  // Functional
+  green:    '#4A6741',
+  lightGreen:'#DCE8DA',
+  red:      '#7B3B3B',
+  lightRed: '#F2E0E0',
+  orange:   '#8B5E3C',
+  ltOrange: '#F2E6D9',
+  // Aliases for legacy refs
+  navy:     '#2C2925',
+  darkBlue: '#2C2925',
+  midBlue:  '#6B5E52',
+  lightBlue:'#EDE7DE',
+  vlBlue:   '#F5F0EA',
+  grey:     '#6B5E52',
+  ltGrey:   '#EDE7DE',
+  brdr:     '#B5A494',
+  purple:   '#5C4A5A',
+  ltPurple: '#EDE7DE',
+  teal:     '#3D5A58',
+  ltTeal:   '#DCE8E7',
+  gold:     '#7A6A3A',
+  ltGold:   '#F2EDD9',
 };
+
+// Muted desaturated expiry bucket colours
 const BKT = {
-  '2026': { bg:'#c0392b', lt:'#fadbd8' },
-  '2027': { bg:'#d35400', lt:'#fdebd0' },
-  '2028': { bg:'#1e8449', lt:'#d5f5e3' },
-  '2029': { bg:'#1a5276', lt:'#d6eaf8' },
-  '2030': { bg:'#6c3483', lt:'#e8daef' },
-  '2031+':{ bg:'#0e6655', lt:'#d1f2eb' },
-  'Vacant':{ bg:'#808080', lt:'#ececec' },
+  '2026': { bg:'#7B3B3B', lt:'#F2E0E0' },
+  '2027': { bg:'#8B5E3C', lt:'#F2E6D9' },
+  '2028': { bg:'#4A6741', lt:'#DCE8DA' },
+  '2029': { bg:'#3D5A6B', lt:'#D9E6F0' },
+  '2030': { bg:'#5C4A5A', lt:'#EDE7ED' },
+  '2031+':{ bg:'#3D5A58', lt:'#DCE8E7' },
+  'Vacant':{ bg:'#8A8178', lt:'#EEEBE8' },
 };
 
 // ── Building configs ─────────────────────────────────────────────
@@ -29,7 +52,7 @@ const BUILDINGS = {
     name: '17 Castlereagh Street',
     suburb: 'Sydney CBD',
     shortName: 'Castlereagh',
-    accent: C.darkBlue,
+    accent: C.stone,
     expiryCol: 'Z',
     psmCol:    'AA',
     nameCol:   'AB',
@@ -47,7 +70,7 @@ const BUILDINGS = {
     name: '1 Elizabeth Plaza',
     suburb: 'North Sydney',
     shortName: 'Elizabeth',
-    accent: '#1F6B75',
+    accent: C.warm,
     expiryCol: 'AD',
     psmCol:    'AE',
     nameCol:   'AF',
@@ -118,8 +141,7 @@ function parseBuilding(wb, cfg) {
     const vacant  = !expiry || psm === 0;
     const remYrs  = active ? (expiry - today) / (365.25 * 86400000) : 0;
     const grossPA = active ? psm * nla : 0;
-
-    const mktRaw = parseFloat(cv(id, `X${r}`)) || 0;
+    const mktRaw  = parseFloat(cv(id, `X${r}`)) || 0;
 
     suites.push({
       r, floor, suiteNum: String(suiteNum || ''), nla, expiry, psm, dispName,
@@ -230,26 +252,30 @@ function PinPage({ onSuccess }) {
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center',
-      background:`linear-gradient(135deg, ${C.navy} 0%, #1F6B75 100%)` }}>
-      <div style={{ background:C.white, borderRadius:12, padding:'48px 40px', width:360,
-        boxShadow:'0 20px 60px rgba(0,0,0,0.35)', textAlign:'center' }}>
+      background:`linear-gradient(135deg, ${C.stone} 0%, ${C.warm} 100%)` }}>
+      <div style={{ background:C.parchment, borderRadius:12, padding:'48px 40px', width:360,
+        boxShadow:'0 20px 60px rgba(0,0,0,0.35)', textAlign:'center', fontFamily:'Georgia, serif' }}>
         <div style={{ fontSize:40, marginBottom:16 }}>🏢</div>
-        <h1 style={{ color:C.navy, fontSize:18, fontWeight:700, marginBottom:4 }}>Portfolio Dashboard</h1>
-        <p style={{ color:C.grey, fontSize:12, marginBottom:8 }}>17 Castlereagh Street, Sydney CBD</p>
-        <p style={{ color:C.grey, fontSize:12, marginBottom:28 }}>1 Elizabeth Plaza, North Sydney</p>
+        <div style={{ color:C.sand, fontSize:11, fontWeight:600, letterSpacing:2,
+          textTransform:'uppercase', marginBottom:8 }}>Goldberg Family Office</div>
+        <h1 style={{ color:C.stone, fontSize:20, fontWeight:700, marginBottom:4 }}>Portfolio Dashboard</h1>
+        <p style={{ color:C.warm, fontSize:12, marginBottom:8 }}>17 Castlereagh Street, Sydney CBD</p>
+        <p style={{ color:C.warm, fontSize:12, marginBottom:28 }}>1 Elizabeth Plaza, North Sydney</p>
         <form onSubmit={submit}>
           <input type="password" inputMode="numeric" placeholder="Enter PIN" value={pin}
             onChange={e => { setPin(e.target.value); setErr(false); }} maxLength={8} autoFocus
             style={{ width:'100%', padding:'12px 16px', fontSize:22, textAlign:'center',
-              letterSpacing:8, border:`2px solid ${err?C.red:C.brdr}`, borderRadius:8,
-              marginBottom:err?8:16, outline:'none', background:err?'#fff5f5':C.white }}/>
+              letterSpacing:8, border:`2px solid ${err?C.red:C.sand}`, borderRadius:8,
+              marginBottom:err?8:16, outline:'none', background:err?'#f9f0f0':C.white,
+              fontFamily:'Georgia, serif' }}/>
           {err && <p style={{ color:C.red, fontSize:12, marginBottom:12 }}>Incorrect PIN</p>}
-          <button type="submit" style={{ width:'100%', padding:'12px', background:C.darkBlue,
-            color:C.white, border:'none', borderRadius:8, fontSize:14, fontWeight:600, cursor:'pointer' }}>
+          <button type="submit" style={{ width:'100%', padding:'12px', background:C.stone,
+            color:C.parchment, border:'none', borderRadius:8, fontSize:14, fontWeight:600,
+            cursor:'pointer', fontFamily:'Georgia, serif', letterSpacing:1 }}>
             Enter Dashboard
           </button>
         </form>
-        <p style={{ color:'#bbb', fontSize:11, marginTop:20 }}>Authorised access only</p>
+        <p style={{ color:C.sand, fontSize:11, marginTop:20 }}>Authorised access only</p>
       </div>
     </div>
   );
@@ -257,30 +283,21 @@ function PinPage({ onSuccess }) {
 
 // ── Top Nav ──────────────────────────────────────────────────────
 function TopNav({ view, setView, loaded }) {
-  const tabs = [
-    { id:'portfolio', label:'📊 Portfolio', group:null },
-    { id:'cs_dashboard', label:'Dashboard', group:'17 Castlereagh' },
-    { id:'cs_stack',    label:'Stack Plan', group:'17 Castlereagh' },
-    { id:'ep_dashboard', label:'Dashboard', group:'1 Elizabeth Plaza' },
-    { id:'ep_stack',    label:'Stack Plan', group:'1 Elizabeth Plaza' },
-  ];
-
   const groups = [
     { label:'', tabs:['portfolio'] },
-    { label:'17 Castlereagh St, Sydney CBD', tabs:['cs_dashboard','cs_stack'], color:C.darkBlue },
-    { label:'1 Elizabeth Plaza, North Sydney', tabs:['ep_dashboard','ep_stack'], color:'#1F6B75' },
+    { label:'17 Castlereagh St, Sydney CBD', tabs:['cs_dashboard','cs_stack'], color:C.stone },
+    { label:'1 Elizabeth Plaza, North Sydney', tabs:['ep_dashboard','ep_stack'], color:C.warm },
   ];
 
   return (
-    <div style={{ background:C.navy }}>
+    <div style={{ background:C.stone, fontFamily:'Georgia, serif' }}>
       {/* GFO Header */}
       <div style={{ maxWidth:1400, margin:'0 auto', padding:'10px 24px 6px', display:'flex',
         justifyContent:'space-between', alignItems:'baseline',
         borderBottom:'1px solid rgba(255,255,255,0.1)' }}>
-        <span style={{ color:'rgba(255,255,255,0.9)', fontSize:13, fontWeight:700,
-          letterSpacing:1, fontFamily:'Georgia, serif' }}>Goldberg Family Office</span>
-        <span style={{ color:'rgba(255,255,255,0.45)', fontSize:11,
-          fontFamily:'Georgia, serif' }}>Prepared by Jake Goldberg</span>
+        <span style={{ color:C.parchment, fontSize:13, fontWeight:700, letterSpacing:2,
+          fontFamily:'Georgia, serif', textTransform:'uppercase' }}>Goldberg Family Office</span>
+        <span style={{ color:C.sand, fontSize:11, fontFamily:'Georgia, serif' }}>Prepared by Jake Goldberg</span>
       </div>
       {/* Building group labels */}
       <div style={{ maxWidth:1400, margin:'0 auto', display:'flex',
@@ -289,23 +306,21 @@ function TopNav({ view, setView, loaded }) {
         {groups.slice(1).map(g => (
           <div key={g.label} style={{ flex:1, padding:'6px 8px',
             borderLeft:'1px solid rgba(255,255,255,0.1)', borderRight:'1px solid rgba(255,255,255,0.1)' }}>
-            <span style={{ color:'rgba(255,255,255,0.5)', fontSize:10, fontWeight:600 }}>{g.label}</span>
+            <span style={{ color:C.sand, fontSize:10, fontWeight:600 }}>{g.label}</span>
           </div>
         ))}
       </div>
-
       {/* Tabs */}
       <div style={{ maxWidth:1400, margin:'0 auto', display:'flex',
         alignItems:'stretch', padding:'0 24px' }}>
-        {/* Portfolio tab */}
         <button onClick={() => setView('portfolio')}
           style={{ padding:'14px 20px', border:'none', background:'transparent', cursor:'pointer',
-            fontSize:13, fontWeight:700, color: view==='portfolio'?C.white:'rgba(255,255,255,0.55)',
-            borderBottom: view==='portfolio'?`3px solid ${C.white}`:'3px solid transparent',
+            fontSize:13, fontWeight:700, fontFamily:'Georgia, serif',
+            color: view==='portfolio'?C.parchment:C.sand,
+            borderBottom: view==='portfolio'?`3px solid ${C.sand}`:'3px solid transparent',
             transition:'all 0.15s', whiteSpace:'nowrap', width:120, flexShrink:0 }}>
-          📊 Portfolio
+          Portfolio
         </button>
-        {/* Castlereagh tabs */}
         <div style={{ flex:1, display:'flex', borderLeft:'1px solid rgba(255,255,255,0.1)',
           borderRight:'1px solid rgba(255,255,255,0.1)' }}>
           {['cs_dashboard','cs_stack'].map(id => {
@@ -313,25 +328,24 @@ function TopNav({ view, setView, loaded }) {
             return (
               <button key={id} onClick={() => setView(id)}
                 style={{ flex:1, padding:'14px 16px', border:'none', background:'transparent',
-                  cursor:'pointer', fontSize:13, fontWeight:600,
-                  color: view===id?C.white:'rgba(255,255,255,0.55)',
-                  borderBottom: view===id?`3px solid ${C.darkBlue==='#204e7a'?'#6ea8fe':'#6ea8fe'}`:'3px solid transparent',
+                  cursor:'pointer', fontSize:13, fontWeight:600, fontFamily:'Georgia, serif',
+                  color: view===id?C.parchment:C.sand,
+                  borderBottom: view===id?`3px solid ${C.parchment}`:'3px solid transparent',
                   transition:'all 0.15s' }}>
                 {label} {!loaded.castlereagh && id==='cs_dashboard' ? '⏳' : ''}
               </button>
             );
           })}
         </div>
-        {/* Elizabeth tabs */}
         <div style={{ flex:1, display:'flex', borderLeft:'1px solid rgba(255,255,255,0.1)' }}>
           {['ep_dashboard','ep_stack'].map(id => {
             const label = id.includes('stack') ? 'Stack Plan' : 'Dashboard';
             return (
               <button key={id} onClick={() => setView(id)}
                 style={{ flex:1, padding:'14px 16px', border:'none', background:'transparent',
-                  cursor:'pointer', fontSize:13, fontWeight:600,
-                  color: view===id?C.white:'rgba(255,255,255,0.55)',
-                  borderBottom: view===id?'3px solid #4ecdc4':'3px solid transparent',
+                  cursor:'pointer', fontSize:13, fontWeight:600, fontFamily:'Georgia, serif',
+                  color: view===id?C.parchment:C.sand,
+                  borderBottom: view===id?`3px solid ${C.sand}`:'3px solid transparent',
                   transition:'all 0.15s' }}>
                 {label} {!loaded.elizabeth && id==='ep_dashboard' ? '⏳' : ''}
               </button>
@@ -347,43 +361,43 @@ function TopNav({ view, setView, loaded }) {
 function PortfolioView({ buildings }) {
   const cs = buildings.castlereagh;
   const ep = buildings.elizabeth;
-  const portfolioNLA   = (cs?.totalNLA||0) + (ep?.totalNLA||0);
-  const portfolioInc   = (cs?.grossInc||0) + (ep?.grossInc||0);
-  const portfolioOccNLA= (cs?.occNLA||0) + (ep?.occNLA||0);
-  const portfolioOcc   = portfolioNLA>0 ? portfolioOccNLA/portfolioNLA : 0;
+  const portfolioNLA    = (cs?.totalNLA||0) + (ep?.totalNLA||0);
+  const portfolioInc    = (cs?.grossInc||0) + (ep?.grossInc||0);
+  const portfolioOccNLA = (cs?.occNLA||0) + (ep?.occNLA||0);
+  const portfolioOcc    = portfolioNLA>0 ? portfolioOccNLA/portfolioNLA : 0;
   const waleNLA_n = ((cs?.waleNLA||0)*(cs?.occNLA||0)) + ((ep?.waleNLA||0)*(ep?.occNLA||0));
   const waleNLA_d = (cs?.occNLA||0) + (ep?.occNLA||0);
-  const portfolioWALE  = waleNLA_d > 0 ? waleNLA_n/waleNLA_d : 0;
+  const portfolioWALE   = waleNLA_d > 0 ? waleNLA_n/waleNLA_d : 0;
 
   return (
     <div>
       {/* Portfolio KPIs */}
-      <div style={{ background:C.navy, margin:'-24px -24px 24px', padding:'16px 24px' }}>
+      <div style={{ background:C.stone, margin:'-24px -24px 24px', padding:'16px 24px' }}>
         <div style={{ maxWidth:1400-48, display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12 }}>
           {[
-            ['PORTFOLIO NLA', `${fmtNum(portfolioNLA,0)} sqm`, C.midBlue],
-            ['PORTFOLIO OCCUPANCY', fmtPct(portfolioOcc), portfolioOcc>=0.90?C.green:C.orange],
-            ['PORTFOLIO GROSS INCOME PA', fmtCcy(portfolioInc), C.midBlue],
-            ['PORTFOLIO WALE (NLA)', `${portfolioWALE.toFixed(2)} yrs`, C.teal],
+            ['PORTFOLIO NLA', `${fmtNum(portfolioNLA,0)} sqm`, C.sand],
+            ['PORTFOLIO OCCUPANCY', fmtPct(portfolioOcc), portfolioOcc>=0.90?C.lightGreen:C.ltOrange],
+            ['PORTFOLIO GROSS INCOME PA', fmtCcy(portfolioInc), C.sand],
+            ['PORTFOLIO WALE (NLA)', `${portfolioWALE.toFixed(2)} yrs`, C.sand],
           ].map(([l,v,a]) => (
-            <div key={l} style={{ background:'rgba(255,255,255,0.08)', borderRadius:8,
-              padding:'12px 16px', borderLeft:`3px solid ${a}` }}>
-              <div style={{ color:'rgba(255,255,255,0.55)', fontSize:10, fontWeight:600, marginBottom:4 }}>{l}</div>
-              <div style={{ color:C.white, fontSize:20, fontWeight:700 }}>{v}</div>
+            <div key={l} style={{ background:'rgba(255,255,255,0.07)', borderRadius:8,
+              padding:'12px 16px', borderLeft:`3px solid ${C.sand}`, fontFamily:'Georgia, serif' }}>
+              <div style={{ color:C.sand, fontSize:10, fontWeight:600, marginBottom:4, letterSpacing:1 }}>{l}</div>
+              <div style={{ color:C.parchment, fontSize:20, fontWeight:700 }}>{v}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Side by side comparison */}
+      {/* Side by side */}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, marginBottom:20 }}>
         {[
-          { data:cs, cfg:BUILDINGS.castlereagh, accent:C.darkBlue },
-          { data:ep, cfg:BUILDINGS.elizabeth,   accent:'#1F6B75' },
+          { data:cs, cfg:BUILDINGS.castlereagh, accent:C.stone },
+          { data:ep, cfg:BUILDINGS.elizabeth,   accent:C.warm },
         ].map(({ data, cfg, accent }) => (
           <Card key={cfg.id} title={cfg.name} accent={accent}>
             {!data ? (
-              <div style={{ padding:24, textAlign:'center', color:C.grey }}>
+              <div style={{ padding:24, textAlign:'center', color:C.warm }}>
                 <div style={{ fontSize:24, marginBottom:8 }}>⏳</div>
                 <div>Loading workbook...</div>
               </div>
@@ -398,14 +412,13 @@ function PortfolioView({ buildings }) {
                     ['WALE (Income)', `${data.waleInc.toFixed(2)} yrs`],
                     ['Vacant NLA', `${fmtNum(data.vacNLA,0)} sqm`],
                   ].map(([l,v]) => (
-                    <div key={l} style={{ background:C.vlBlue, borderRadius:6, padding:'10px 12px' }}>
-                      <div style={{ fontSize:10, color:C.grey, marginBottom:3 }}>{l}</div>
-                      <div style={{ fontSize:15, fontWeight:700, color:C.navy }}>{v}</div>
+                    <div key={l} style={{ background:C.linen, borderRadius:6, padding:'10px 12px' }}>
+                      <div style={{ fontSize:10, color:C.warm, marginBottom:3, fontFamily:'Georgia, serif' }}>{l}</div>
+                      <div style={{ fontSize:15, fontWeight:700, color:C.stone, fontFamily:'Georgia, serif' }}>{v}</div>
                     </div>
                   ))}
                 </div>
-                {/* Mini expiry bar */}
-                <div style={{ fontSize:11, color:C.grey, marginBottom:6, fontWeight:600 }}>
+                <div style={{ fontSize:11, color:C.warm, marginBottom:6, fontWeight:600, fontFamily:'Georgia, serif' }}>
                   Expiry Profile
                 </div>
                 <div style={{ display:'flex', height:20, borderRadius:4, overflow:'hidden', gap:1 }}>
@@ -432,16 +445,16 @@ function PortfolioView({ buildings }) {
       </div>
 
       {/* Portfolio expiry table */}
-      <Card title="Combined Expiry Profile — Both Assets" accent={C.navy}>
+      <Card title="Combined Expiry Profile — Both Assets" accent={C.stone}>
         <table>
           <thead><tr>
             <th>Expiry Year</th>
-            <th style={{background:'#2c5e9e'}}>Castlereagh — Income</th>
-            <th style={{background:'#2c5e9e'}}>NLA (sqm)</th>
-            <th style={{background:'#1a5c5c'}}># Leases</th>
-            <th style={{background:'#1a5c5c'}}>Elizabeth — Income</th>
-            <th style={{background:'#1a5c5c'}}>NLA (sqm)</th>
-            <th style={{background:'#1a5c5c'}}># Leases</th>
+            <th>Castlereagh — Income</th>
+            <th>NLA (sqm)</th>
+            <th># Leases</th>
+            <th>Elizabeth — Income</th>
+            <th>NLA (sqm)</th>
+            <th># Leases</th>
             <th>Portfolio Total Inc</th>
             <th>Portfolio %</th>
           </tr></thead>
@@ -468,9 +481,9 @@ function PortfolioView({ buildings }) {
                 </tr>
               );
             })}
-            <tr style={{ fontWeight:700, background:C.navy }}>
+            <tr style={{ fontWeight:700, background:C.stone }}>
               {['TOTAL','','','','','','',fmtCcy(portfolioInc),'100%'].map((v,i)=>(
-                <td key={i} style={{ color:'white', textAlign:i>=7?'right':'left' }}>{v}</td>
+                <td key={i} style={{ color:C.parchment, textAlign:i>=7?'right':'left' }}>{v}</td>
               ))}
             </tr>
           </tbody>
@@ -493,12 +506,11 @@ function BuildingDashboard({ data, cfg }) {
     {id:'valuation', label:'Valuation'},
   ];
 
-  const accent = cfg.id==='castlereagh' ? C.darkBlue : '#1F6B75';
+  const accent = cfg.id==='castlereagh' ? C.stone : C.warm;
   const totalInc = data.active.reduce((s,x)=>s+x.grossPA,0);
 
   return (
     <div>
-      {/* Building KPI bar */}
       <div style={{ background:accent, margin:'-24px -24px 0', padding:'12px 24px' }}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:10, maxWidth:1352 }}>
           {[
@@ -510,23 +522,23 @@ function BuildingDashboard({ data, cfg }) {
             ['WALE (Income)', `${data.waleInc.toFixed(2)} yrs`],
           ].map(([l,v]) => (
             <div key={l} style={{ background:'rgba(255,255,255,0.1)', borderRadius:6, padding:'10px 12px' }}>
-              <div style={{ color:'rgba(255,255,255,0.6)', fontSize:10, fontWeight:600, marginBottom:3 }}>{l}</div>
-              <div style={{ color:'white', fontSize:16, fontWeight:700 }}>{v}</div>
+              <div style={{ color:C.sand, fontSize:10, fontWeight:600, marginBottom:3, fontFamily:'Georgia, serif', letterSpacing:1 }}>{l}</div>
+              <div style={{ color:C.parchment, fontSize:16, fontWeight:700, fontFamily:'Georgia, serif' }}>{v}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Sub-tab nav */}
-      <div style={{ background:C.white, borderBottom:`1px solid ${C.brdr}`,
+      <div style={{ background:C.parchment, borderBottom:`1px solid ${C.sand}`,
         margin:'0 -24px', padding:'0 24px', marginBottom:20 }}>
         <div style={{ display:'flex', gap:0 }}>
           {subTabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               style={{ padding:'12px 16px', border:'none', background:'transparent',
                 fontSize:12, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap',
-                color: tab===t.id ? accent : C.grey,
-                borderBottom: tab===t.id ? `2px solid ${accent}` : '2px solid transparent',
+                fontFamily:'Georgia, serif',
+                color: tab===t.id ? C.stone : C.warm,
+                borderBottom: tab===t.id ? `2px solid ${C.stone}` : '2px solid transparent',
                 transition:'all 0.15s' }}>
               {t.label}
             </button>
@@ -597,10 +609,10 @@ function OverviewSection({ data, totalInc, accent }) {
             ['Occupied NLA',`${fmtNum(data.occNLA,0)} sqm`,fmtPct(data.occ)+' occupancy'],
             ['Vacant NLA',`${fmtNum(data.vacNLA,0)} sqm`,fmtPct(data.vacNLA/data.totalNLA)+' vacancy'],
           ].map(([l,v,s])=>(
-            <div key={l} style={{background:C.vlBlue,borderRadius:6,padding:'12px',borderLeft:`3px solid ${accent}`}}>
-              <div style={{fontSize:10,color:C.grey,marginBottom:3}}>{l}</div>
-              <div style={{fontSize:17,fontWeight:700,color:C.navy,marginBottom:2}}>{v}</div>
-              <div style={{fontSize:11,color:C.grey}}>{s}</div>
+            <div key={l} style={{background:C.linen,borderRadius:6,padding:'12px',borderLeft:`3px solid ${C.sand}`}}>
+              <div style={{fontSize:10,color:C.warm,marginBottom:3,fontFamily:'Georgia, serif'}}>{l}</div>
+              <div style={{fontSize:17,fontWeight:700,color:C.stone,marginBottom:2,fontFamily:'Georgia, serif'}}>{v}</div>
+              <div style={{fontSize:11,color:C.warm,fontFamily:'Georgia, serif'}}>{s}</div>
             </div>
           ))}
         </div>
@@ -608,7 +620,7 @@ function OverviewSection({ data, totalInc, accent }) {
 
       <Card title="Upcoming Critical Dates (Next 6 Months)" accent={accent}>
         {data.criticalDates.filter(d=>d.days<=180).length===0 ? (
-          <p style={{color:C.grey,padding:12,textAlign:'center',fontSize:13}}>No events in next 6 months</p>
+          <p style={{color:C.warm,padding:12,textAlign:'center',fontSize:13,fontFamily:'Georgia, serif'}}>No events in next 6 months</p>
         ) : (
           <table>
             <thead><tr><th>Suite</th><th>Tenant</th><th>Event</th><th>Date</th><th>Days</th></tr></thead>
@@ -620,7 +632,7 @@ function OverviewSection({ data, totalInc, accent }) {
                   <td>{d.event}</td>
                   <td>{fmtDate(d.date)}</td>
                   <td style={{textAlign:'center',fontWeight:700,
-                    color:d.days<=60?C.red:d.days<=120?C.orange:C.grey}}>
+                    color:d.days<=60?C.red:d.days<=120?C.orange:C.warm}}>
                     {d.days}d
                   </td>
                 </tr>
@@ -643,7 +655,7 @@ function LeasesSection({ data }) {
   });
   function Th({col,label}) {
     const on=sortCol===col;
-    return <th style={{cursor:'pointer',background:on?C.navy:C.darkBlue}}
+    return <th style={{cursor:'pointer',background:on?C.warm:C.stone}}
       onClick={()=>{setSortCol(col);setSortDir(s=>s.col===col?-s.dir:1);}}>
       {label}{on?(sortDir===1?'↑':'↓'):''}
     </th>;
@@ -660,7 +672,7 @@ function LeasesSection({ data }) {
           </tr></thead>
           <tbody>
             {sorted.map(s=>{
-              const bg=s.expired||s.vacant?'#fff0f0':s.active&&s.remYrs<1?'#fff8f0':'inherit';
+              const bg=s.expired||s.vacant?C.lightRed:s.active&&s.remYrs<1?C.ltOrange:'inherit';
               return <tr key={s.r} style={{background:bg}}>
                 <td>{s.floor}</td>
                 <td style={{fontWeight:700}}>{s.suiteNum}</td>
@@ -696,21 +708,21 @@ function ExpirySection({ data, totalInc }) {
             boxShadow:'0 2px 8px rgba(0,0,0,0.08)'}}>
             <div style={{background:bg,color:'white',padding:'10px 14px',
               display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <span style={{fontSize:15,fontWeight:700}}>{yr}</span>
-              <span style={{fontSize:12}}>{suites.length} suite{suites.length!==1?'s':''}</span>
+              <span style={{fontSize:15,fontWeight:700,fontFamily:'Georgia, serif'}}>{yr}</span>
+              <span style={{fontSize:12,fontFamily:'Georgia, serif'}}>{suites.length} suite{suites.length!==1?'s':''}</span>
             </div>
             <div style={{padding:'10px 14px',background:lt,display:'grid',
               gridTemplateColumns:'1fr 1fr',gap:8,fontSize:12}}>
-              <div><div style={{color:C.grey,fontSize:10}}>Gross Income PA</div><div style={{fontWeight:700}}>{fmtCcy(inc)}</div></div>
-              <div><div style={{color:C.grey,fontSize:10}}>% of Portfolio</div><div style={{fontWeight:700}}>{totalInc>0?fmtPct(inc/totalInc):'—'}</div></div>
-              <div><div style={{color:C.grey,fontSize:10}}>NLA (sqm)</div><div style={{fontWeight:700}}>{fmtNum(nla,0)}</div></div>
-              <div><div style={{color:C.grey,fontSize:10}}>Area %</div><div style={{fontWeight:700}}>{data.totalNLA>0?fmtPct(nla/data.totalNLA):'—'}</div></div>
+              <div><div style={{color:C.warm,fontSize:10,fontFamily:'Georgia, serif'}}>Gross Income PA</div><div style={{fontWeight:700,color:C.stone,fontFamily:'Georgia, serif'}}>{fmtCcy(inc)}</div></div>
+              <div><div style={{color:C.warm,fontSize:10,fontFamily:'Georgia, serif'}}>% of Portfolio</div><div style={{fontWeight:700,color:C.stone,fontFamily:'Georgia, serif'}}>{totalInc>0?fmtPct(inc/totalInc):'—'}</div></div>
+              <div><div style={{color:C.warm,fontSize:10,fontFamily:'Georgia, serif'}}>NLA (sqm)</div><div style={{fontWeight:700,color:C.stone,fontFamily:'Georgia, serif'}}>{fmtNum(nla,0)}</div></div>
+              <div><div style={{color:C.warm,fontSize:10,fontFamily:'Georgia, serif'}}>Area %</div><div style={{fontWeight:700,color:C.stone,fontFamily:'Georgia, serif'}}>{data.totalNLA>0?fmtPct(nla/data.totalNLA):'—'}</div></div>
             </div>
             {suites.map(s=>(
               <div key={s.r} style={{display:'flex',justifyContent:'space-between',
-                padding:'5px 14px',borderTop:`1px solid ${lt}`,fontSize:11}}>
-                <span style={{fontWeight:600}}>{s.dispName}</span>
-                <span style={{color:C.grey}}>{s.suiteNum} · {s.expiry?fmtDate(s.expiry):'Vacant'}</span>
+                padding:'5px 14px',borderTop:`1px solid ${C.sand}`,fontSize:11}}>
+                <span style={{fontWeight:600,color:C.stone,fontFamily:'Georgia, serif'}}>{s.dispName}</span>
+                <span style={{color:C.warm,fontFamily:'Georgia, serif'}}>{s.suiteNum} · {s.expiry?fmtDate(s.expiry):'Vacant'}</span>
               </div>
             ))}
           </div>
@@ -733,7 +745,7 @@ function MarketSection({ data }) {
             const m=s.mktPSM||0, f=s.psm;
             const va=m>0?f-m:null, vp=m>0?(f-m)/m:null;
             const pos=vp==null?'—':vp>0.05?'▲ Above Mkt':vp<-0.05?'▼ Below Mkt':'≈ At Market';
-            const bg=vp==null?'inherit':vp>0.05?'#fff0f0':vp<-0.05?'#f0fff4':C.vlBlue;
+            const bg=vp==null?'inherit':vp>0.05?C.lightRed:vp<-0.05?C.lightGreen:C.linen;
             return <tr key={s.r} style={{background:bg}}>
               <td style={{fontWeight:700}}>{s.suiteNum}</td>
               <td>{s.dispName}</td><td>{s.floor}</td>
@@ -742,7 +754,7 @@ function MarketSection({ data }) {
               <td style={{textAlign:'right'}}>{m>0?fmtPSM(m):'—'}</td>
               <td style={{textAlign:'right',color:va==null?'inherit':va>0?C.red:C.green}}>{va!=null?fmtPSM(va):'—'}</td>
               <td style={{textAlign:'right',color:vp==null?'inherit':vp>0?C.red:C.green}}>{vp!=null?fmtPct(vp):'—'}</td>
-              <td style={{fontWeight:600,color:pos.includes('Above')?C.red:pos.includes('Below')?C.green:C.grey}}>{pos}</td>
+              <td style={{fontWeight:600,color:pos.includes('Above')?C.red:pos.includes('Below')?C.green:C.warm}}>{pos}</td>
             </tr>;
           })}
         </tbody>
@@ -783,7 +795,7 @@ function CriticalSection({ data }) {
   return (
     <Card title="Critical Dates — Next 18 Months (Lease Expiries & Rent Reviews)">
       {data.criticalDates.length===0 ? (
-        <p style={{color:C.grey,padding:16,textAlign:'center'}}>No events in next 18 months</p>
+        <p style={{color:C.warm,padding:16,textAlign:'center',fontFamily:'Georgia, serif'}}>No events in next 18 months</p>
       ) : (
         <table>
           <thead><tr><th>Suite</th><th>Tenant</th><th>Event</th><th>Date</th><th>Days Away</th><th>Note</th></tr></thead>
@@ -793,10 +805,10 @@ function CriticalSection({ data }) {
                 <td style={{fontWeight:700}}>{d.suite}</td><td>{d.tenant}</td><td>{d.event}</td>
                 <td>{fmtDate(d.date)}</td>
                 <td style={{textAlign:'center',fontWeight:700,
-                  color:d.days<0?C.red:d.days<=60?C.red:d.days<=120?C.orange:C.grey}}>
+                  color:d.days<0?C.red:d.days<=60?C.red:d.days<=120?C.orange:C.warm}}>
                   {d.days<0?`${Math.abs(d.days)}d overdue`:`${d.days}d`}
                 </td>
-                <td style={{fontSize:11,color:C.grey}}>{d.note}</td>
+                <td style={{fontSize:11,color:C.warm}}>{d.note}</td>
               </tr>
             ))}
           </tbody>
@@ -813,7 +825,7 @@ function ValuationSection({ data }) {
     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
       <Card title="Property Valuation">
         {!valuation ? (
-          <div style={{padding:24,textAlign:'center',color:C.grey}}>
+          <div style={{padding:24,textAlign:'center',color:C.warm,fontFamily:'Georgia, serif'}}>
             <div style={{fontSize:36,marginBottom:12}}>📋</div>
             <div style={{fontWeight:600,marginBottom:8}}>No valuation data entered yet</div>
             <div style={{fontSize:12}}>Enter data in the Valuations tab of your Excel file,
@@ -823,21 +835,21 @@ function ValuationSection({ data }) {
           <div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:14}}>
               {[['Latest (Val 1)',valuation.v1],['Val 2',valuation.v2],['Val 3',valuation.v3]].map(([l,v],i)=>(
-                <div key={i} style={{background:i===0?C.lightGreen:C.vlBlue,borderRadius:6,padding:'10px 12px',
-                  border:`1px solid ${i===0?C.green:'#c0d8f0'}`}}>
-                  <div style={{color:C.grey,fontSize:10,marginBottom:3}}>{l}</div>
-                  <div style={{fontSize:16,fontWeight:700,color:C.navy}}>{v.amount?fmtCcy(v.amount):'—'}</div>
-                  {v.date&&<div style={{fontSize:11,color:C.grey,marginTop:3}}>{fmtDate(v.date)}</div>}
+                <div key={i} style={{background:i===0?C.lightGreen:C.linen,borderRadius:6,padding:'10px 12px',
+                  border:`1px solid ${i===0?C.green:C.sand}`}}>
+                  <div style={{color:C.warm,fontSize:10,marginBottom:3,fontFamily:'Georgia, serif'}}>{l}</div>
+                  <div style={{fontSize:16,fontWeight:700,color:C.stone,fontFamily:'Georgia, serif'}}>{v.amount?fmtCcy(v.amount):'—'}</div>
+                  {v.date&&<div style={{fontSize:11,color:C.warm,marginTop:3,fontFamily:'Georgia, serif'}}>{fmtDate(v.date)}</div>}
                 </div>
               ))}
             </div>
-            {valuation.v1.valuer&&<div style={{fontSize:12,color:C.grey,marginBottom:6}}><b>Valuer:</b> {valuation.v1.valuer}</div>}
-            {valuation.v1.capRate>0&&<div style={{fontSize:12,color:C.grey,marginBottom:6}}><b>Cap Rate:</b> {fmtPct(valuation.v1.capRate)}</div>}
+            {valuation.v1.valuer&&<div style={{fontSize:12,color:C.warm,marginBottom:6,fontFamily:'Georgia, serif'}}><b>Valuer:</b> {valuation.v1.valuer}</div>}
+            {valuation.v1.capRate>0&&<div style={{fontSize:12,color:C.warm,marginBottom:6,fontFamily:'Georgia, serif'}}><b>Cap Rate:</b> {fmtPct(valuation.v1.capRate)}</div>}
             {valuation.movement!=null&&(
-              <div style={{background:valuation.movement>=0?C.lightGreen:'#fff0f0',
+              <div style={{background:valuation.movement>=0?C.lightGreen:C.lightRed,
                 borderRadius:6,padding:'10px 14px',marginTop:10}}>
-                <div style={{fontSize:11,color:C.grey,marginBottom:3}}>Movement Val 1 vs Val 2</div>
-                <div style={{fontSize:15,fontWeight:700,color:valuation.movement>=0?C.green:C.red}}>
+                <div style={{fontSize:11,color:C.warm,marginBottom:3,fontFamily:'Georgia, serif'}}>Movement Val 1 vs Val 2</div>
+                <div style={{fontSize:15,fontWeight:700,color:valuation.movement>=0?C.green:C.red,fontFamily:'Georgia, serif'}}>
                   {valuation.movement>=0?'+':''}{fmtCcy(valuation.movement)} ({fmtPct(valuation.movPct)})
                 </div>
               </div>
@@ -846,7 +858,7 @@ function ValuationSection({ data }) {
         )}
       </Card>
       <Card title="How to Update">
-        <div style={{fontSize:12,color:C.grey,lineHeight:1.9,padding:'4px 0'}}>
+        <div style={{fontSize:12,color:C.warm,lineHeight:1.9,padding:'4px 0',fontFamily:'Georgia, serif'}}>
           <p>1. Open your Excel file and go to the <b>Valuations</b> tab</p>
           <p>2. Enter figures in the yellow input cells</p>
           <p>3. <b>Save the file in Excel</b> (caches formula results)</p>
@@ -862,12 +874,10 @@ function ValuationSection({ data }) {
 // ── Stack Plan ────────────────────────────────────────────────────
 function StackPlan({ data, cfg }) {
   const [hover, setHover] = useState(null);
-  const accent = cfg.id==='castlereagh' ? C.darkBlue : '#1F6B75';
-  const totalInc = data.active.reduce((s,x)=>s+x.grossPA,0);
+  const accent = cfg.id==='castlereagh' ? C.stone : C.warm;
 
   return (
     <div>
-      {/* Header stats */}
       <div style={{background:accent,margin:'-24px -24px 20px',padding:'12px 24px'}}>
         <div style={{display:'flex',gap:24,flexWrap:'wrap'}}>
           {[
@@ -878,43 +888,36 @@ function StackPlan({ data, cfg }) {
             ['Active Leases',`${data.active.length} suites`],
             ['Vacant NLA',`${fmtNum(data.vacNLA,0)} sqm`],
           ].map(([l,v])=>(
-            <div key={l} style={{borderLeft:`2px solid rgba(255,255,255,0.3)`,paddingLeft:12}}>
-              <div style={{color:'rgba(255,255,255,0.6)',fontSize:10}}>{l}</div>
-              <div style={{color:'white',fontSize:14,fontWeight:700}}>{v}</div>
+            <div key={l} style={{borderLeft:`2px solid ${C.sand}`,paddingLeft:12}}>
+              <div style={{color:C.sand,fontSize:10,fontFamily:'Georgia, serif'}}>{l}</div>
+              <div style={{color:C.parchment,fontSize:14,fontWeight:700,fontFamily:'Georgia, serif'}}>{v}</div>
             </div>
           ))}
         </div>
       </div>
 
       <div style={{display:'grid',gridTemplateColumns:'1fr 280px',gap:20,alignItems:'start'}}>
-        {/* Stack */}
         <div>
           <div style={{background:C.white,borderRadius:8,overflow:'hidden',
             boxShadow:'0 2px 8px rgba(0,0,0,0.08)'}}>
-            <div style={{background:C.navy,color:'white',padding:'10px 16px',
-              fontSize:13,fontWeight:700}}>
+            <div style={{background:C.stone,color:C.parchment,padding:'10px 16px',
+              fontSize:13,fontWeight:700,fontFamily:'Georgia, serif'}}>
               Building Stack — {cfg.name} | {cfg.suburb}
             </div>
-            <div style={{padding:'12px 16px',display:'flex',flexDirection:'column',gap:4}}>
-              {/* Roof cap */}
-              <div style={{height:6,background:'#bbb',borderRadius:4,marginBottom:4}}/>
-
+            <div style={{padding:'12px 16px',display:'flex',flexDirection:'column',gap:4,background:C.parchment}}>
+              <div style={{height:6,background:C.sand,borderRadius:4,marginBottom:4}}/>
               {cfg.floorOrder.map(fl=>{
                 const flSuites = data.suites.filter(s=>s.floor===fl);
                 if(!flSuites.length) return null;
                 const flNLA = flSuites.reduce((s,x)=>s+x.nla,0);
-
                 return (
                   <div key={fl} style={{display:'flex',gap:4,alignItems:'stretch',minHeight:52}}>
-                    {/* Floor label */}
-                    <div style={{width:64,flexShrink:0,background:C.navy,color:'white',
+                    <div style={{width:64,flexShrink:0,background:C.stone,color:C.parchment,
                       borderRadius:4,display:'flex',flexDirection:'column',
-                      alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,padding:'2px 0'}}>
+                      alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,padding:'2px 0',fontFamily:'Georgia, serif'}}>
                       <span>{fl}</span>
                       <span style={{fontSize:9,opacity:0.7,marginTop:1}}>{fmtNum(flNLA,0)}</span>
                     </div>
-
-                    {/* Suite blocks */}
                     <div style={{flex:1,display:'flex',gap:3,alignItems:'stretch'}}>
                       {flSuites.map(s=>{
                         const pct = flNLA>0 ? s.nla/flNLA : 1/flSuites.length;
@@ -922,7 +925,6 @@ function StackPlan({ data, cfg }) {
                         const bg = BKT[bk]?.bg || '#ccc';
                         const lt = BKT[bk]?.lt || '#eee';
                         const isHov = hover===`${fl}-${s.suiteNum}`;
-
                         return (
                           <div key={s.r}
                             onMouseEnter={()=>setHover(`${fl}-${s.suiteNum}`)}
@@ -933,29 +935,24 @@ function StackPlan({ data, cfg }) {
                               background: isHov ? (s.active?lt:bg) : bg,
                               borderRadius:4, minWidth:20, overflow:'hidden',
                               cursor:'default', position:'relative',
-                              border: isHov?`2px solid ${C.white}`:'2px solid transparent',
+                              border: isHov?`2px solid ${C.parchment}`:'2px solid transparent',
                               transition:'all 0.1s',
                               display:'flex',flexDirection:'column',
                               alignItems:'center',justifyContent:'center',
                               padding:'2px 4px',
                             }}>
-                            <span style={{color:isHov?(s.active?C.navy:'white'):'white',
-                              fontSize:9,fontWeight:700,textAlign:'center',
-                              lineHeight:1.2,overflow:'hidden',
-                              textOverflow:'ellipsis',whiteSpace:'nowrap',
-                              maxWidth:'100%'}}>
+                            <span style={{color:'white',fontSize:9,fontWeight:700,textAlign:'center',
+                              lineHeight:1.2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
                               {s.suiteNum}
                             </span>
                             {pct > 0.12 && (
-                              <span style={{color:isHov?(s.active?C.grey:'rgba(255,255,255,0.8)'):'rgba(255,255,255,0.8)',
-                                fontSize:8,textAlign:'center',overflow:'hidden',
-                                textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>
+                              <span style={{color:'rgba(255,255,255,0.85)',fontSize:8,textAlign:'center',overflow:'hidden',
+                                textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
                                 {s.dispName.split(' ').slice(0,2).join(' ')}
                               </span>
                             )}
                             {pct > 0.15 && (
-                              <span style={{color:isHov?(s.active?C.grey:'rgba(255,255,255,0.7)'):'rgba(255,255,255,0.7)',
-                                fontSize:8,textAlign:'center'}}>
+                              <span style={{color:'rgba(255,255,255,0.7)',fontSize:8,textAlign:'center',fontFamily:'Georgia, serif'}}>
                                 {fmtNum(s.nla,0)} sqm
                               </span>
                             )}
@@ -966,35 +963,30 @@ function StackPlan({ data, cfg }) {
                   </div>
                 );
               })}
-
-              {/* Base */}
-              <div style={{height:6,background:'#bbb',borderRadius:4,marginTop:4}}/>
+              <div style={{height:6,background:C.sand,borderRadius:4,marginTop:4}}/>
             </div>
           </div>
 
-          {/* Legend */}
-          <div style={{background:C.white,borderRadius:8,marginTop:12,padding:'12px 16px',
+          <div style={{background:C.parchment,borderRadius:8,marginTop:12,padding:'12px 16px',
             boxShadow:'0 2px 8px rgba(0,0,0,0.08)'}}>
-            <div style={{fontSize:11,fontWeight:700,color:C.navy,marginBottom:8}}>
+            <div style={{fontSize:11,fontWeight:700,color:C.stone,marginBottom:8,fontFamily:'Georgia, serif'}}>
               Legend — Expiry Year
             </div>
             <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
               {Object.entries(BKT).map(([yr,{bg}])=>(
                 <div key={yr} style={{display:'flex',alignItems:'center',gap:5}}>
                   <div style={{width:16,height:16,background:bg,borderRadius:3,flexShrink:0}}/>
-                  <span style={{fontSize:11,color:C.grey}}>{yr}</span>
+                  <span style={{fontSize:11,color:C.warm,fontFamily:'Georgia, serif'}}>{yr}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Suite detail panel */}
         <div>
-          <div style={{background:C.white,borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.08)',
-            position:'sticky',top:12}}>
-            <div style={{background:C.navy,color:'white',padding:'10px 14px',
-              fontSize:12,fontWeight:700,borderRadius:'8px 8px 0 0'}}>
+          <div style={{background:C.parchment,borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.08)',position:'sticky',top:12}}>
+            <div style={{background:C.stone,color:C.parchment,padding:'10px 14px',
+              fontSize:12,fontWeight:700,borderRadius:'8px 8px 0 0',fontFamily:'Georgia, serif'}}>
               Suite Directory
             </div>
             <div style={{maxHeight:600,overflowY:'auto'}}>
@@ -1003,22 +995,20 @@ function StackPlan({ data, cfg }) {
                 if(!flSuites.length) return null;
                 return (
                   <div key={fl}>
-                    <div style={{background:C.vlBlue,padding:'5px 12px',
-                      fontSize:10,fontWeight:700,color:C.navy,
-                      borderTop:`1px solid ${C.brdr}`}}>{fl}</div>
+                    <div style={{background:C.linen,padding:'5px 12px',fontSize:10,fontWeight:700,
+                      color:C.stone,borderTop:`1px solid ${C.sand}`,fontFamily:'Georgia, serif'}}>{fl}</div>
                     {flSuites.map(s=>{
                       const bk = !s.active?'Vacant':bucketKey(s.expiry);
                       return (
-                        <div key={s.r} style={{padding:'6px 12px',
-                          borderTop:`1px solid #f0f4f8`,fontSize:11,
-                          background:hover===`${fl}-${s.suiteNum}`?C.lightBlue:'white'}}>
+                        <div key={s.r} style={{padding:'6px 12px',borderTop:`1px solid ${C.linen}`,fontSize:11,
+                          background:hover===`${fl}-${s.suiteNum}`?C.linen:C.parchment}}>
                           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:4}}>
-                            <span style={{fontWeight:700,color:C.navy}}>{s.suiteNum}</span>
+                            <span style={{fontWeight:700,color:C.stone,fontFamily:'Georgia, serif'}}>{s.suiteNum}</span>
                             <span style={{background:BKT[bk].bg,color:'white',
-                              fontSize:9,padding:'1px 5px',borderRadius:3,flexShrink:0}}>{bk}</span>
+                              fontSize:9,padding:'1px 5px',borderRadius:3,flexShrink:0,fontFamily:'Georgia, serif'}}>{bk}</span>
                           </div>
-                          <div style={{color:s.active?C.grey:C.red,fontSize:10,marginTop:1}}>{s.dispName}</div>
-                          <div style={{color:'#aaa',fontSize:10}}>
+                          <div style={{color:s.active?C.warm:C.red,fontSize:10,marginTop:1,fontFamily:'Georgia, serif'}}>{s.dispName}</div>
+                          <div style={{color:C.sand,fontSize:10,fontFamily:'Georgia, serif'}}>
                             {s.active?`${fmtNum(s.nla,0)} sqm · ${fmtPSM(s.psm)} · ${fmtDate(s.expiry)}`:
                              s.vacant?`${fmtNum(s.nla,0)} sqm · VACANT`:`${fmtNum(s.nla,0)} sqm · EXPIRED`}
                           </div>
@@ -1037,27 +1027,28 @@ function StackPlan({ data, cfg }) {
 }
 
 // ── Card ─────────────────────────────────────────────────────────
-function Card({ title, children, accent=C.navy }) {
+function Card({ title, children, accent=C.stone }) {
   return (
     <div style={{background:C.white,borderRadius:8,overflow:'hidden',
       boxShadow:'0 2px 8px rgba(0,0,0,0.08)'}}>
-      <div style={{background:accent,color:'white',padding:'10px 16px',fontSize:13,fontWeight:700}}>
+      <div style={{background:accent,color:C.parchment,padding:'10px 16px',fontSize:13,
+        fontWeight:700,fontFamily:'Georgia, serif'}}>
         {title}
       </div>
-      <div style={{padding:16,overflowX:'auto'}}>{children}</div>
+      <div style={{padding:16,overflowX:'auto',background:C.parchment}}>{children}</div>
     </div>
   );
 }
 
-// ── Loading / Error ──────────────────────────────────────────────
+// ── Spinner ───────────────────────────────────────────────────────
 function Spinner() {
   return (
     <div style={{display:'flex',flexDirection:'column',alignItems:'center',
       justifyContent:'center',padding:80,gap:16}}>
-      <div style={{width:40,height:40,border:`4px solid ${C.lightBlue}`,
-        borderTop:`4px solid ${C.darkBlue}`,borderRadius:'50%',
+      <div style={{width:40,height:40,border:`4px solid ${C.linen}`,
+        borderTop:`4px solid ${C.stone}`,borderRadius:'50%',
         animation:'spin 0.8s linear infinite'}}/>
-      <div style={{color:C.grey,fontSize:13}}>Loading workbook data...</div>
+      <div style={{color:C.warm,fontSize:13,fontFamily:'Georgia, serif'}}>Loading workbook data...</div>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -1111,14 +1102,13 @@ export default function App() {
   const ep = bldData.elizabeth;
 
   return (
-    <div style={{ minHeight:'100vh' }}>
+    <div style={{ minHeight:'100vh', background:C.parchment, fontFamily:'Georgia, serif' }}>
       <TopNav view={view} setView={setView} loaded={loaded} />
       <div style={{ maxWidth:1400, margin:'0 auto', padding:24 }}>
 
         {view==='portfolio' && (
           <PortfolioView buildings={{ castlereagh:cs, elizabeth:ep }} />
         )}
-
         {view==='cs_dashboard' && (
           errors.castlereagh ? (
             <Card title="Error loading 17 Castlereagh">
@@ -1128,7 +1118,6 @@ export default function App() {
             <BuildingDashboard data={cs} cfg={BUILDINGS.castlereagh} />
           )
         )}
-
         {view==='cs_stack' && (
           errors.castlereagh ? (
             <Card title="Error loading 17 Castlereagh">
@@ -1138,7 +1127,6 @@ export default function App() {
             <StackPlan data={cs} cfg={BUILDINGS.castlereagh} />
           )
         )}
-
         {view==='ep_dashboard' && (
           errors.elizabeth ? (
             <Card title="Error loading 1 Elizabeth Plaza">
@@ -1148,7 +1136,6 @@ export default function App() {
             <BuildingDashboard data={ep} cfg={BUILDINGS.elizabeth} />
           )
         )}
-
         {view==='ep_stack' && (
           errors.elizabeth ? (
             <Card title="Error loading 1 Elizabeth Plaza">
