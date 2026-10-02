@@ -3,34 +3,34 @@ import { useState, useEffect, useCallback } from 'react';
 // ── Colours ───────────────────────────────────────────────────────
 const C = {
   // House palette
-  stone:    '#2C2925',
-  warm:     '#6B5E52',
-  sand:     '#B5A494',
+  stone: '#2C2925',
+  warm: '#6B5E52',
+  sand: '#B5A494',
   parchment:'#F5F0EA',
-  linen:    '#EDE7DE',
-  white:    '#ffffff',
+  linen: '#EDE7DE',
+  white: '#ffffff',
   // Functional
-  green:    '#4A6741',
+  green: '#4A6741',
   lightGreen:'#DCE8DA',
-  red:      '#7B3B3B',
+  red: '#7B3B3B',
   lightRed: '#F2E0E0',
-  orange:   '#8B5E3C',
+  orange: '#8B5E3C',
   ltOrange: '#F2E6D9',
   // Aliases for legacy refs
-  navy:     '#2C2925',
+  navy: '#2C2925',
   darkBlue: '#2C2925',
-  midBlue:  '#6B5E52',
+  midBlue: '#6B5E52',
   lightBlue:'#EDE7DE',
-  vlBlue:   '#F5F0EA',
-  grey:     '#6B5E52',
-  ltGrey:   '#EDE7DE',
-  brdr:     '#B5A494',
-  purple:   '#5C4A5A',
+  vlBlue: '#F5F0EA',
+  grey: '#6B5E52',
+  ltGrey: '#EDE7DE',
+  brdr: '#B5A494',
+  purple: '#5C4A5A',
   ltPurple: '#EDE7DE',
-  teal:     '#3D5A58',
-  ltTeal:   '#DCE8E7',
-  gold:     '#7A6A3A',
-  ltGold:   '#F2EDD9',
+  teal: '#3D5A58',
+  ltTeal: '#DCE8E7',
+  gold: '#7A6A3A',
+  ltGold: '#F2EDD9',
 };
 
 // Muted desaturated expiry bucket colours
@@ -41,7 +41,7 @@ const BKT = {
   '2029': { bg:'#3D5A6B', lt:'#D9E6F0' },
   '2030': { bg:'#5C4A5A', lt:'#EDE7ED' },
   '2031+':{ bg:'#3D5A58', lt:'#DCE8E7' },
-  'Vacant':{ bg:'#8A8178', lt:'#EEEBE8' },
+  'Vacant':{ bg:'#8F3A3A', lt:'#F1DEDE' },
 };
 
 // ── Building configs ─────────────────────────────────────────────
@@ -54,13 +54,13 @@ const BUILDINGS = {
     shortName: 'Castlereagh',
     accent: C.stone,
     expiryCol: 'Z',
-    psmCol:    'AA',
-    nameCol:   'AB',
+    psmCol: 'AA',
+    nameCol: 'AB',
     reviewTypeCol: 'P',
     nextReviewCol: 'Q',
     netCol: 'N',
     dataStart: 3,
-    dataEnd:   27,
+    dataEnd: 27,
     floorOrder: ['L12','L11','L10','L09','L08','L07','L06','L05','L04','L03','L02','L01','GF','LWR GND'],
     critDatesStart: 67,
     critDatesEnd: 78,
@@ -73,13 +73,13 @@ const BUILDINGS = {
     shortName: 'Elizabeth',
     accent: C.warm,
     expiryCol: 'AD',
-    psmCol:    'AE',
-    nameCol:   'AF',
+    psmCol: 'AE',
+    nameCol: 'AF',
     reviewTypeCol: 'S',
     nextReviewCol: 'T',
     netCol: 'Q',
     dataStart: 3,
-    dataEnd:   24,
+    dataEnd: 24,
     floorOrder: ['L12','L11','L10','L09','L08','L07','L06','L05','L04','L03'],
     critDatesStart: 48,
     critDatesEnd: 59,
@@ -117,16 +117,16 @@ function bucketKey(d) {
 
 // ── Parser ───────────────────────────────────────────────────────
 function parseBuilding(wb, cfg) {
-  const id  = wb.Sheets['Input Data']; if (!id) return null;
+  const id = wb.Sheets['Input Data']; if (!id) return null;
   const today = new Date(); today.setHours(0,0,0,0);
   const suites = [];
 
   for (let r = cfg.dataStart; r <= cfg.dataEnd; r++) {
-    const floor    = cv(id, `B${r}`);
+    const floor = cv(id, `B${r}`);
     const suiteNum = cv(id, `C${r}`);
-    const nla      = parseFloat(cv(id, `F${r}`)) || 0;
-    const expCell  = id[`${cfg.expiryCol}${r}`];
-    const psm      = parseFloat(cv(id, `${cfg.psmCol}${r}`)) || 0;
+    const nla = parseFloat(cv(id, `F${r}`)) || 0;
+    const expCell = id[`${cfg.expiryCol}${r}`];
+    const psm = parseFloat(cv(id, `${cfg.psmCol}${r}`)) || 0;
     const dispName = cv(id, `${cfg.nameCol}${r}`) || suiteNum || `Row ${r}`;
 
     if (!floor && !suiteNum && !nla) continue;
@@ -138,13 +138,13 @@ function parseBuilding(wb, cfg) {
         expiry = new Date(Math.round((expCell.v - 25569) * 86400000));
     }
 
-    const active  = expiry && expiry > today && (psm > 0 || cv(id, `${cfg.nameCol}${r}`) != null);
+    const active = expiry && expiry > today && (psm > 0 || cv(id, `${cfg.nameCol}${r}`) != null);
     const expired = expiry && expiry <= today;
-    const vacant  = !expiry || psm === 0;
-    const remYrs  = active ? (expiry - today) / (365.25 * 86400000) : 0;
+    const vacant = !expiry || psm === 0;
+    const remYrs = active ? (expiry - today) / (365.25 * 86400000) : 0;
     const grossPA = active ? psm * nla : 0;
-    const mktRaw  = parseFloat(cv(id, `X${r}`)) || 0;
-    const netPA   = active ? (parseFloat(cv(id, `${cfg.netCol}${r}`)) || grossPA) : 0;
+    const mktRaw = parseFloat(cv(id, `X${r}`)) || 0;
+    const netPA = active ? (parseFloat(cv(id, `${cfg.netCol}${r}`)) || grossPA) : 0;
 
     suites.push({
       r, floor, suiteNum: String(suiteNum || ''), nla, expiry, psm, dispName,
@@ -152,19 +152,19 @@ function parseBuilding(wb, cfg) {
     });
   }
 
-  const active   = suites.filter(s => s.active);
+  const active = suites.filter(s => s.active);
   const totalNLA = suites.reduce((s,x) => s+x.nla, 0);
-  const occNLA   = active.reduce((s,x) => s+x.nla, 0);
-  const vacNLA   = totalNLA - occNLA;
-  const occ      = totalNLA > 0 ? occNLA/totalNLA : 0;
+  const occNLA = active.reduce((s,x) => s+x.nla, 0);
+  const vacNLA = totalNLA - occNLA;
+  const occ = totalNLA > 0 ? occNLA/totalNLA : 0;
   const grossInc = active.reduce((s,x) => s+x.grossPA, 0);
-  const netInc   = active.reduce((s,x) => s+x.netPA, 0);
-  const wNLA_n   = active.reduce((s,x) => s+x.nla*x.remYrs, 0);
-  const wNLA_d   = active.reduce((s,x) => s+x.nla, 0);
-  const wInc_n   = active.reduce((s,x) => s+x.grossPA*x.remYrs, 0);
-  const wInc_d   = active.reduce((s,x) => s+x.grossPA, 0);
-  const waleNLA  = wNLA_d > 0 ? wNLA_n/wNLA_d : 0;
-  const waleInc  = wInc_d > 0 ? wInc_n/wInc_d : 0;
+  const netInc = active.reduce((s,x) => s+x.netPA, 0);
+  const wNLA_n = active.reduce((s,x) => s+x.nla*x.remYrs, 0);
+  const wNLA_d = active.reduce((s,x) => s+x.nla, 0);
+  const wInc_n = active.reduce((s,x) => s+x.grossPA*x.remYrs, 0);
+  const wInc_d = active.reduce((s,x) => s+x.grossPA, 0);
+  const waleNLA = wNLA_d > 0 ? wNLA_n/wNLA_d : 0;
+  const waleInc = wInc_d > 0 ? wInc_n/wInc_d : 0;
 
   const buckets = {'2026':[],'2027':[],'2028':[],'2029':[],'2030':[],'2031+':[],'Vacant':[]};
   for (const s of suites) {
@@ -239,7 +239,7 @@ function parseBuilding(wb, cfg) {
   }
 
   return { suites, active, totalNLA, occNLA, vacNLA, occ, grossInc, netInc,
-           waleNLA, waleInc, buckets, byFloor, criticalDates, valuation, cfg };
+    waleNLA, waleInc, buckets, byFloor, criticalDates, valuation, cfg };
 }
 
 // ── PIN Page ─────────────────────────────────────────────────────
@@ -365,14 +365,20 @@ function TopNav({ view, setView, loaded }) {
 function PortfolioView({ buildings }) {
   const cs = buildings.castlereagh;
   const ep = buildings.elizabeth;
-  const portfolioNLA    = (cs?.totalNLA||0) + (ep?.totalNLA||0);
-  const portfolioInc    = (cs?.grossInc||0) + (ep?.grossInc||0);
+  const portfolioNLA = (cs?.totalNLA||0) + (ep?.totalNLA||0);
+  const portfolioInc = (cs?.grossInc||0) + (ep?.grossInc||0);
   const portfolioNetInc = (cs?.netInc||0) + (ep?.netInc||0);
   const portfolioOccNLA = (cs?.occNLA||0) + (ep?.occNLA||0);
-  const portfolioOcc    = portfolioNLA>0 ? portfolioOccNLA/portfolioNLA : 0;
+  const portfolioOcc = portfolioNLA>0 ? portfolioOccNLA/portfolioNLA : 0;
   const waleNLA_n = ((cs?.waleNLA||0)*(cs?.occNLA||0)) + ((ep?.waleNLA||0)*(ep?.occNLA||0));
   const waleNLA_d = (cs?.occNLA||0) + (ep?.occNLA||0);
-  const portfolioWALE   = waleNLA_d > 0 ? waleNLA_n/waleNLA_d : 0;
+  const portfolioWALE = waleNLA_d > 0 ? waleNLA_n/waleNLA_d : 0;
+
+  // Combined critical dates across both assets, for the main-page red flag
+  const allCritical = [
+    ...((cs?.criticalDates||[]).map(d => ({ ...d, building: cs.cfg.shortName }))),
+    ...((ep?.criticalDates||[]).map(d => ({ ...d, building: ep.cfg.shortName }))),
+  ].sort((a,b) => a.date - b.date).filter(d => d.days <= 90);
 
   return (
     <div>
@@ -399,7 +405,7 @@ function PortfolioView({ buildings }) {
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, marginBottom:20 }}>
         {[
           { data:cs, cfg:BUILDINGS.castlereagh, accent:C.stone },
-          { data:ep, cfg:BUILDINGS.elizabeth,   accent:C.warm },
+          { data:ep, cfg:BUILDINGS.elizabeth, accent:C.warm },
         ].map(({ data, cfg, accent }) => (
           <Card key={cfg.id} title={cfg.name} accent={accent}>
             {!data ? (
@@ -496,6 +502,41 @@ function PortfolioView({ buildings }) {
           </tbody>
         </table>
       </Card>
+
+      {/* Critical dates — main page, red within 30 days */}
+      <div style={{ marginTop:20 }}>
+        <Card title="Critical Dates — Next 90 Days (Both Assets)" accent={C.stone}>
+          {allCritical.length===0 ? (
+            <p style={{ color:C.warm, padding:12, textAlign:'center', fontSize:13, fontFamily:'Georgia, serif' }}>
+              No events in next 90 days
+            </p>
+          ) : (
+            <table>
+              <thead><tr>
+                <th>Building</th><th>Suite</th><th>Tenant</th><th>Event</th><th>Date</th><th>Days</th>
+              </tr></thead>
+              <tbody>
+                {allCritical.map((d,i) => {
+                  const urgent = d.days <= 30;
+                  return (
+                    <tr key={i} style={{ background: urgent ? C.lightRed : 'inherit' }}>
+                      <td>{d.building}</td>
+                      <td style={{ fontWeight:700 }}>{d.suite}</td>
+                      <td style={{ color: urgent ? C.red : 'inherit', fontWeight: urgent ? 700 : 400 }}>{d.tenant}</td>
+                      <td style={{ color: urgent ? C.red : 'inherit', fontWeight: urgent ? 700 : 400 }}>{d.event}</td>
+                      <td style={{ color: urgent ? C.red : 'inherit', fontWeight: urgent ? 700 : 400 }}>{fmtDate(d.date)}</td>
+                      <td style={{ textAlign:'center', fontWeight:700,
+                        color: urgent ? C.red : d.days<=60 ? C.orange : C.warm }}>
+                        {d.days}d
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }
@@ -504,12 +545,12 @@ function PortfolioView({ buildings }) {
 function BuildingDashboard({ data, cfg }) {
   const [tab, setTab] = useState('overview');
   const subTabs = [
-    {id:'overview',  label:'Overview'},
-    {id:'leases',    label:'Leases'},
-    {id:'expiry',    label:'Expiry Profile'},
-    {id:'market',    label:'Market Rents'},
-    {id:'floors',    label:'By Floor'},
-    {id:'critical',  label:'Critical Dates'},
+    {id:'overview', label:'Overview'},
+    {id:'leases', label:'Leases'},
+    {id:'expiry', label:'Expiry Profile'},
+    {id:'market', label:'Market Rents'},
+    {id:'floors', label:'By Floor'},
+    {id:'critical', label:'Critical Dates'},
     {id:'valuation', label:'Valuation'},
   ];
 
@@ -554,12 +595,12 @@ function BuildingDashboard({ data, cfg }) {
         </div>
       </div>
 
-      {tab==='overview'  && <OverviewSection data={data} totalInc={totalInc} accent={accent} />}
-      {tab==='leases'    && <LeasesSection data={data} />}
-      {tab==='expiry'    && <ExpirySection data={data} totalInc={totalInc} />}
-      {tab==='market'    && <MarketSection data={data} />}
-      {tab==='floors'    && <FloorsSection data={data} totalInc={totalInc} />}
-      {tab==='critical'  && <CriticalSection data={data} />}
+      {tab==='overview' && <OverviewSection data={data} totalInc={totalInc} accent={accent} />}
+      {tab==='leases' && <LeasesSection data={data} />}
+      {tab==='expiry' && <ExpirySection data={data} totalInc={totalInc} />}
+      {tab==='market' && <MarketSection data={data} />}
+      {tab==='floors' && <FloorsSection data={data} totalInc={totalInc} />}
+      {tab==='critical' && <CriticalSection data={data} />}
       {tab==='valuation' && <ValuationSection data={data} />}
     </div>
   );
@@ -922,7 +963,7 @@ function StackPlan({ data, cfg }) {
                 if(!flSuites.length) return null;
                 const flNLA = flSuites.reduce((s,x)=>s+x.nla,0);
                 return (
-                  <div key={fl} style={{display:'flex',gap:4,alignItems:'stretch',minHeight:52}}>
+                  <div key={fl} style={{display:'flex',gap:4,alignItems:'stretch',minHeight:60}}>
                     <div style={{width:64,flexShrink:0,background:C.stone,color:C.parchment,
                       borderRadius:4,display:'flex',flexDirection:'column',
                       alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,padding:'2px 0',fontFamily:'Georgia, serif'}}>
@@ -932,10 +973,16 @@ function StackPlan({ data, cfg }) {
                     <div style={{flex:1,display:'flex',gap:3,alignItems:'stretch'}}>
                       {flSuites.map(s=>{
                         const pct = flNLA>0 ? s.nla/flNLA : 1/flSuites.length;
+                        // Vacant suites are always flagged red, regardless of any bucket year
                         const bk = !s.active ? 'Vacant' : bucketKey(s.expiry);
                         const bg = BKT[bk]?.bg || '#ccc';
                         const lt = BKT[bk]?.lt || '#eee';
                         const isHov = hover===`${fl}-${s.suiteNum}`;
+                        // PSM shown in the square: face rent if let, indicative market rent if vacant
+                        const psmLabel = s.active
+                          ? `${fmtPSM(s.psm)} psm`
+                          : (s.psm>0 ? `Est ${fmtPSM(s.psm)} psm` : '');
+                        const expiryLabel = s.active ? fmtDate(s.expiry) : 'VACANT';
                         return (
                           <div key={s.r}
                             onMouseEnter={()=>setHover(`${fl}-${s.suiteNum}`)}
@@ -950,21 +997,26 @@ function StackPlan({ data, cfg }) {
                               transition:'all 0.1s',
                               display:'flex',flexDirection:'column',
                               alignItems:'center',justifyContent:'center',
-                              padding:'2px 4px',
+                              padding:'2px 3px',
                             }}>
                             <span style={{color:'white',fontSize:9,fontWeight:700,textAlign:'center',
-                              lineHeight:1.2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
+                              lineHeight:1.15,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
                               {s.suiteNum}
                             </span>
-                            {pct > 0.12 && (
+                            {pct > 0.10 && (
                               <span style={{color:'rgba(255,255,255,0.85)',fontSize:8,textAlign:'center',overflow:'hidden',
                                 textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
                                 {s.dispName.split(' ').slice(0,2).join(' ')}
                               </span>
                             )}
-                            {pct > 0.15 && (
-                              <span style={{color:'rgba(255,255,255,0.7)',fontSize:8,textAlign:'center',fontFamily:'Georgia, serif'}}>
-                                {fmtNum(s.nla,0)} sqm
+                            <span style={{color:'rgba(255,255,255,0.95)',fontSize:8,fontWeight:600,textAlign:'center',
+                              lineHeight:1.15,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
+                              {expiryLabel}
+                            </span>
+                            {psmLabel && (
+                              <span style={{color:'rgba(255,255,255,0.85)',fontSize:8,textAlign:'center',
+                                lineHeight:1.15,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
+                                {psmLabel}
                               </span>
                             )}
                           </div>
@@ -1021,7 +1073,7 @@ function StackPlan({ data, cfg }) {
                           <div style={{color:s.active?C.warm:C.red,fontSize:10,marginTop:1,fontFamily:'Georgia, serif'}}>{s.dispName}</div>
                           <div style={{color:C.sand,fontSize:10,fontFamily:'Georgia, serif'}}>
                             {s.active?`${fmtNum(s.nla,0)} sqm · ${fmtPSM(s.psm)} · ${fmtDate(s.expiry)}`:
-                             s.vacant?`${fmtNum(s.nla,0)} sqm · VACANT`:`${fmtNum(s.nla,0)} sqm · EXPIRED`}
+                              s.vacant?`${fmtNum(s.nla,0)} sqm · VACANT`:`${fmtNum(s.nla,0)} sqm · EXPIRED`}
                           </div>
                         </div>
                       );
@@ -1067,11 +1119,11 @@ function Spinner() {
 
 // ── Main App ──────────────────────────────────────────────────────
 export default function App() {
-  const [auth,    setAuth]    = useState(false);
-  const [view,    setView]    = useState('portfolio');
+  const [auth, setAuth] = useState(false);
+  const [view, setView] = useState('portfolio');
   const [bldData, setBldData] = useState({ castlereagh:null, elizabeth:null });
-  const [errors,  setErrors]  = useState({});
-  const [loaded,  setLoaded]  = useState({ castlereagh:false, elizabeth:false });
+  const [errors, setErrors] = useState({});
+  const [loaded, setLoaded] = useState({ castlereagh:false, elizabeth:false });
 
   useEffect(() => {
     if (typeof window !== 'undefined' && sessionStorage.getItem('dash_auth')==='1')
@@ -1089,15 +1141,15 @@ export default function App() {
         `Place the file in public/data/ in your GitHub repo.`
       );
       const buf = await res.arrayBuffer();
-      const wb  = XLSX.read(buf, { type:'array', cellDates:true, cellFormula:false });
+      const wb = XLSX.read(buf, { type:'array', cellDates:true, cellFormula:false });
       const data = parseBuilding(wb, cfg);
       if (!data) throw new Error(`Input Data sheet not found in ${cfg.name} workbook.`);
       setBldData(prev => ({ ...prev, [key]:data }));
-      setLoaded(prev  => ({ ...prev, [key]:true }));
+      setLoaded(prev => ({ ...prev, [key]:true }));
     } catch(e) {
       console.error(key, e);
       setErrors(prev => ({ ...prev, [key]:e.message }));
-      setLoaded(prev  => ({ ...prev, [key]:true }));
+      setLoaded(prev => ({ ...prev, [key]:true }));
     }
   }, []);
 
