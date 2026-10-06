@@ -35,13 +35,13 @@ const C = {
 
 // Muted desaturated expiry bucket colours
 const BKT = {
-  '2026': { bg:'#7B3B3B', lt:'#F2E0E0' },
-  '2027': { bg:'#8B5E3C', lt:'#F2E6D9' },
-  '2028': { bg:'#4A6741', lt:'#DCE8DA' },
-  '2029': { bg:'#3D5A6B', lt:'#D9E6F0' },
-  '2030': { bg:'#5C4A5A', lt:'#EDE7ED' },
-  '2031+':{ bg:'#3D5A58', lt:'#DCE8E7' },
-  'Vacant':{ bg:'#8F3A3A', lt:'#F1DEDE' },
+  '2026': { bg:'#F57C00', lt:'#FDE3C8' },
+  '2027': { bg:'#E91E8C', lt:'#FAD2E6' },
+  '2028': { bg:'#2E9E4F', lt:'#D3EDDA' },
+  '2029': { bg:'#1E6FE0', lt:'#D2E3FA' },
+  '2030': { bg:'#7B2CBF', lt:'#E4D3F3' },
+  '2031+':{ bg:'#00A3A3', lt:'#CDEFEF' },
+  'Vacant':{ bg:'#E50914', lt:'#FBCFD1' },
 };
 
 // ── Building configs ─────────────────────────────────────────────
@@ -105,6 +105,11 @@ function fmtDate(d) {
   if (!d) return '—';
   try { return d.toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}); }
   catch { return '—'; }
+}
+function fmtK(v) {
+  if (!(v > 0)) return '—';
+  if (v >= 1000000) return '$' + (v/1000000).toFixed(2) + 'm';
+  return '$' + Math.round(v/1000) + 'k';
 }
 function fmtPSM(v) { return v>0 ? '$'+Math.round(v).toLocaleString('en-AU') : '—'; }
 function bucketKey(d) {
@@ -294,7 +299,7 @@ function TopNav({ view, setView, loaded }) {
   ];
 
   return (
-    <div style={{ background:C.stone, fontFamily:'Georgia, serif' }}>
+    <div className="no-print" style={{ background:C.stone, fontFamily:'Georgia, serif' }}>
       {/* GFO Header */}
       <div style={{ maxWidth:1400, margin:'0 auto', padding:'10px 24px 6px', display:'flex',
         justifyContent:'space-between', alignItems:'baseline',
@@ -929,7 +934,33 @@ function StackPlan({ data, cfg }) {
 
   return (
     <div>
-      <div style={{background:accent,margin:'-24px -24px 20px',padding:'12px 24px'}}>
+      <style>{`
+        .print-only, .print-footer { display: none; }
+        @media print {
+          @page { size: A4 landscape; margin: 10mm; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .no-print { display: none !important; }
+          .print-only { display: block !important; }
+          .app-body { padding: 0 0 12mm 0 !important; max-width: none !important; }
+          .stack-kpi { margin: 0 0 10px 0 !important; }
+          .stack-grid { grid-template-columns: 1fr !important; }
+          .floor-row { break-inside: avoid; page-break-inside: avoid; }
+          .dir-sticky { position: static !important; box-shadow: none !important; }
+          .dir-scroll { max-height: none !important; overflow: visible !important; column-count: 2; column-gap: 12px; }
+          .dir-floor { break-inside: avoid; page-break-inside: avoid; }
+          .print-footer { display: block !important; position: fixed; bottom: 0; left: 0; right: 0;
+            text-align: center; font-size: 10px; color: #6B5E52; font-family: Georgia, serif;
+            border-top: 1px solid #B5A494; padding-top: 4px; }
+        }
+      `}</style>
+
+      <div className="print-only" style={{marginBottom:10,borderBottom:`2px solid ${C.stone}`,paddingBottom:6,fontFamily:'Georgia, serif'}}>
+        <div style={{fontSize:10,letterSpacing:2,textTransform:'uppercase',color:C.warm}}>Goldberg Family Office</div>
+        <div style={{fontSize:20,fontWeight:700,color:C.stone}}>{cfg.name} — Stack Plan</div>
+        <div style={{fontSize:10,color:C.warm}}>{cfg.suburb} · Printed {new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'long',year:'numeric'})}</div>
+      </div>
+
+      <div className="stack-kpi" style={{background:accent,margin:'-24px -24px 20px',padding:'12px 24px'}}>
         <div style={{display:'flex',gap:24,flexWrap:'wrap'}}>
           {[
             ['Total NLA',`${fmtNum(data.totalNLA,0)} sqm`],
@@ -948,7 +979,15 @@ function StackPlan({ data, cfg }) {
         </div>
       </div>
 
-      <div style={{display:'grid',gridTemplateColumns:'1fr 280px',gap:20,alignItems:'start'}}>
+      <div className="no-print" style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+        <button onClick={()=>window.print()}
+          style={{padding:'8px 18px',background:C.stone,color:C.parchment,border:'none',borderRadius:6,
+            fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'Georgia, serif',letterSpacing:0.5}}>
+          Print stack plan
+        </button>
+      </div>
+
+      <div className="stack-grid" style={{display:'grid',gridTemplateColumns:'1fr 280px',gap:20,alignItems:'start'}}>
         <div>
           <div style={{background:C.white,borderRadius:8,overflow:'hidden',
             boxShadow:'0 2px 8px rgba(0,0,0,0.08)'}}>
@@ -963,7 +1002,7 @@ function StackPlan({ data, cfg }) {
                 if(!flSuites.length) return null;
                 const flNLA = flSuites.reduce((s,x)=>s+x.nla,0);
                 return (
-                  <div key={fl} style={{display:'flex',gap:4,alignItems:'stretch',minHeight:60}}>
+                  <div key={fl} className="floor-row" style={{display:'flex',gap:4,alignItems:'stretch',minHeight:104}}>
                     <div style={{width:64,flexShrink:0,background:C.stone,color:C.parchment,
                       borderRadius:4,display:'flex',flexDirection:'column',
                       alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,padding:'2px 0',fontFamily:'Georgia, serif'}}>
@@ -976,21 +1015,24 @@ function StackPlan({ data, cfg }) {
                         // Vacant suites are always flagged red, regardless of any bucket year
                         const bk = !s.active ? 'Vacant' : bucketKey(s.expiry);
                         const bg = BKT[bk]?.bg || '#ccc';
-                        const lt = BKT[bk]?.lt || '#eee';
                         const isHov = hover===`${fl}-${s.suiteNum}`;
                         // PSM shown in the square: face rent if let, indicative market rent if vacant
                         const psmLabel = s.active
                           ? `${fmtPSM(s.psm)} psm`
                           : (s.psm>0 ? `Est ${fmtPSM(s.psm)} psm` : '');
                         const expiryLabel = s.active ? fmtDate(s.expiry) : 'VACANT';
+                        const grossLabel = s.active ? `Gross ${fmtK(s.grossPA)}` : '';
+                        const netLabel = s.active ? `Net ${fmtK(s.netPA)}` : '';
                         return (
                           <div key={s.r}
                             onMouseEnter={()=>setHover(`${fl}-${s.suiteNum}`)}
                             onMouseLeave={()=>setHover(null)}
-                            title={`${s.dispName}\n${s.suiteNum} | ${fmtNum(s.nla,0)} sqm | ${s.active?fmtPSM(s.psm)+' psm | '+fmtDate(s.expiry):s.vacant?'VACANT':'Expired'}`}
+                            title={`${s.dispName}\n${s.suiteNum} | ${fmtNum(s.nla,0)} sqm | ${s.active?fmtPSM(s.psm)+' psm | '+fmtDate(s.expiry)+' | Gross '+fmtCcy(s.grossPA)+' | Net '+fmtCcy(s.netPA):s.vacant?'VACANT':'Expired'}`}
                             style={{
                               flex: pct,
-                              background: isHov ? (s.active?lt:bg) : bg,
+                              background: bg,
+                              filter: isHov ? 'brightness(1.15)' : 'none',
+                              textShadow:'0 1px 1px rgba(0,0,0,0.35)',
                               borderRadius:4, minWidth:20, overflow:'hidden',
                               cursor:'default', position:'relative',
                               border: isHov?`2px solid ${C.parchment}`:'2px solid transparent',
@@ -1003,12 +1045,10 @@ function StackPlan({ data, cfg }) {
                               lineHeight:1.15,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
                               {s.suiteNum}
                             </span>
-                            {pct > 0.10 && (
-                              <span style={{color:'rgba(255,255,255,0.85)',fontSize:8,textAlign:'center',overflow:'hidden',
-                                textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
-                                {s.dispName.split(' ').slice(0,2).join(' ')}
-                              </span>
-                            )}
+                            <span style={{color:'rgba(255,255,255,0.9)',fontSize:8,textAlign:'center',overflow:'hidden',
+                              textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
+                              {s.dispName.split(' ').slice(0,2).join(' ')}
+                            </span>
                             <span style={{color:'rgba(255,255,255,0.95)',fontSize:8,fontWeight:600,textAlign:'center',
                               lineHeight:1.15,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
                               {expiryLabel}
@@ -1017,6 +1057,18 @@ function StackPlan({ data, cfg }) {
                               <span style={{color:'rgba(255,255,255,0.85)',fontSize:8,textAlign:'center',
                                 lineHeight:1.15,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
                                 {psmLabel}
+                              </span>
+                            )}
+                            {grossLabel && (
+                              <span style={{color:'white',fontSize:8,fontWeight:700,textAlign:'center',
+                                lineHeight:1.15,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
+                                {grossLabel}
+                              </span>
+                            )}
+                            {netLabel && (
+                              <span style={{color:'white',fontSize:8,fontWeight:700,textAlign:'center',
+                                lineHeight:1.15,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%',fontFamily:'Georgia, serif'}}>
+                                {netLabel}
                               </span>
                             )}
                           </div>
@@ -1047,17 +1099,17 @@ function StackPlan({ data, cfg }) {
         </div>
 
         <div>
-          <div style={{background:C.parchment,borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.08)',position:'sticky',top:12}}>
+          <div className="dir-sticky" style={{background:C.parchment,borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.08)',position:'sticky',top:12}}>
             <div style={{background:C.stone,color:C.parchment,padding:'10px 14px',
               fontSize:12,fontWeight:700,borderRadius:'8px 8px 0 0',fontFamily:'Georgia, serif'}}>
               Suite Directory
             </div>
-            <div style={{maxHeight:600,overflowY:'auto'}}>
+            <div className="dir-scroll" style={{maxHeight:600,overflowY:'auto'}}>
               {cfg.floorOrder.map(fl=>{
                 const flSuites=data.suites.filter(s=>s.floor===fl);
                 if(!flSuites.length) return null;
                 return (
-                  <div key={fl}>
+                  <div key={fl} className="dir-floor">
                     <div style={{background:C.linen,padding:'5px 12px',fontSize:10,fontWeight:700,
                       color:C.stone,borderTop:`1px solid ${C.sand}`,fontFamily:'Georgia, serif'}}>{fl}</div>
                     {flSuites.map(s=>{
@@ -1085,6 +1137,7 @@ function StackPlan({ data, cfg }) {
           </div>
         </div>
       </div>
+      <div className="print-footer">Prepared by Jake Goldberg</div>
     </div>
   );
 }
@@ -1167,7 +1220,7 @@ export default function App() {
   return (
     <div style={{ minHeight:'100vh', background:C.parchment, fontFamily:'Georgia, serif' }}>
       <TopNav view={view} setView={setView} loaded={loaded} />
-      <div style={{ maxWidth:1400, margin:'0 auto', padding:24 }}>
+      <div className="app-body" style={{ maxWidth:1400, margin:'0 auto', padding:24 }}>
 
         {view==='portfolio' && (
           <PortfolioView buildings={{ castlereagh:cs, elizabeth:ep }} />
