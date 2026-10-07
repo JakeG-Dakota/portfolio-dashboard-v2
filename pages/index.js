@@ -931,21 +931,28 @@ function ValuationSection({ data }) {
 function StackPlan({ data, cfg }) {
   const [hover, setHover] = useState(null);
   const accent = cfg.id==='castlereagh' ? C.stone : C.warm;
+  const floorCount = Math.max(1, cfg.floorOrder.filter(fl => data.suites.some(s => s.floor===fl)).length);
 
   return (
     <div>
       <style>{`
         .print-only, .print-footer { display: none; }
         @media print {
-          @page { size: A4 landscape; margin: 10mm; }
+          @page { size: A4 portrait; margin: 10mm; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           .no-print { display: none !important; }
           .print-only { display: block !important; }
           .app-body { padding: 0 0 12mm 0 !important; max-width: none !important; }
-          .stack-kpi { margin: 0 0 10px 0 !important; }
+          .stack-kpi { display: none !important; }
+          .stack-title { display: none !important; }
           .stack-grid { grid-template-columns: 1fr !important; }
-          .floor-row { break-inside: avoid; page-break-inside: avoid; }
-          .dir-sticky { position: static !important; box-shadow: none !important; }
+          .floor-row { min-height: 0 !important;
+            height: min(76px, calc((760px - (var(--floors) - 1) * 4px) / var(--floors))) !important;
+            break-inside: avoid; page-break-inside: avoid; }
+          .suite-cell { padding: 1px 2px !important; }
+          .suite-cell span { font-size: 7px !important; line-height: 1.1 !important; }
+          .dir-sticky { position: static !important; box-shadow: none !important;
+            break-before: page; page-break-before: always; }
           .dir-scroll { max-height: none !important; overflow: visible !important; column-count: 2; column-gap: 12px; }
           .dir-floor { break-inside: avoid; page-break-inside: avoid; }
           .print-footer { display: block !important; position: fixed; bottom: 0; left: 0; right: 0;
@@ -958,6 +965,9 @@ function StackPlan({ data, cfg }) {
         <div style={{fontSize:10,letterSpacing:2,textTransform:'uppercase',color:C.warm}}>Goldberg Family Office</div>
         <div style={{fontSize:20,fontWeight:700,color:C.stone}}>{cfg.name} — Stack Plan</div>
         <div style={{fontSize:10,color:C.warm}}>{cfg.suburb} · Printed {new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'long',year:'numeric'})}</div>
+        <div style={{fontSize:10,color:C.stone,marginTop:3}}>
+          NLA {fmtNum(data.totalNLA,0)} sqm · Occupancy {fmtPct(data.occ)} · WALE {data.waleNLA.toFixed(2)} yrs · Gross {fmtCcy(data.grossInc)} pa · Net {fmtCcy(data.netInc)} pa
+        </div>
       </div>
 
       <div className="stack-kpi" style={{background:accent,margin:'-24px -24px 20px',padding:'12px 24px'}}>
@@ -987,11 +997,11 @@ function StackPlan({ data, cfg }) {
         </button>
       </div>
 
-      <div className="stack-grid" style={{display:'grid',gridTemplateColumns:'1fr 280px',gap:20,alignItems:'start'}}>
+      <div className="stack-grid" style={{'--floors':floorCount,display:'grid',gridTemplateColumns:'1fr 280px',gap:20,alignItems:'start'}}>
         <div>
           <div style={{background:C.white,borderRadius:8,overflow:'hidden',
             boxShadow:'0 2px 8px rgba(0,0,0,0.08)'}}>
-            <div style={{background:C.stone,color:C.parchment,padding:'10px 16px',
+            <div className="stack-title" style={{background:C.stone,color:C.parchment,padding:'10px 16px',
               fontSize:13,fontWeight:700,fontFamily:'Georgia, serif'}}>
               Building Stack — {cfg.name} | {cfg.suburb}
             </div>
@@ -1024,7 +1034,7 @@ function StackPlan({ data, cfg }) {
                         const grossLabel = s.active ? `Gross ${fmtK(s.grossPA)}` : '';
                         const netLabel = s.active ? `Net ${fmtK(s.netPA)}` : '';
                         return (
-                          <div key={s.r}
+                          <div key={s.r} className="suite-cell"
                             onMouseEnter={()=>setHover(`${fl}-${s.suiteNum}`)}
                             onMouseLeave={()=>setHover(null)}
                             title={`${s.dispName}\n${s.suiteNum} | ${fmtNum(s.nla,0)} sqm | ${s.active?fmtPSM(s.psm)+' psm | '+fmtDate(s.expiry)+' | Gross '+fmtCcy(s.grossPA)+' | Net '+fmtCcy(s.netPA):s.vacant?'VACANT':'Expired'}`}
